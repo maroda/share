@@ -1,0 +1,83 @@
+autoload promptinit
+promptinit
+
+function precmd {
+    # version control
+    autoload -Uz vcs_info; vcs_info
+    zstyle ':vcs_info:*' formats ' %s:%b'
+    PR_VCS="${vcs_info_msg_0_}"
+
+    local TERMWIDTH
+    (( TERMWIDTH = ${COLUMNS} - 1 ))
+
+    local PROMPTSIZE=${#${(%):--- %D{%R.%S %a %b %d %y}\! }}
+    local PWDSIZE=${#${(%):-%~}}
+
+    if [[ "$PROMPTSIZE + $PWDSIZE" -gt $TERMWIDTH ]]; then
+        (( PR_PWDLEN = $TERMWIDTH - $PROMPTSIZE ))
+    fi
+
+    # change the color of the path if it's not writable
+    if [[ -w $PWD ]]; then
+        PR_PWDCOLOR="${PR_BOLD_DEFAULT}"
+    else
+        PR_PWDCOLOR="${PR_BOLD_YELLOW}"
+    fi  
+
+    # show when in tmux
+#    if [[ -n "${TMUX}" ]]; then
+#        PR_TMUX=" tmux $(tmux display -pt ${TMUX_PANE} '#S:#I.#P')"
+#    else
+#        PR_TMUX=""
+#    fi
+
+    # jobs
+    if [[ ${#jobstates} -gt 0 ]]; then
+        PR_JOBS=" jobs:%j"
+    else
+        PR_JOBS=""
+    fi
+}
+
+# show vi mode
+zle-keymap-select() {
+    VIMODE="${${KEYMAP/vicmd/ vim:command}/(main|viins)}"
+    RPROMPT2="${PR_BOLD_BLUE}${VIMODE}"
+    zle reset-prompt
+}
+
+zle -N zle-keymap-select
+
+setprompt () {
+    setopt prompt_subst
+    autoload colors
+	
+    if [[ "$terminfo[colors]" -gt 8 ]]; then
+        colors
+    fi
+
+    for COLOR in CYAN RED GREEN YELLOW BLUE BLACK; do
+        eval PR_$COLOR='%{$fg_no_bold[${(L)COLOR}]%}'
+        eval PR_BOLD_$COLOR='%{$fg_bold[${(L)COLOR}]%}'
+    done
+    eval PR_BOLD_DEFAULT='%{$fg_bold[default]%}'
+
+    # set the prompt
+    PROMPT='${PR_BOLD_BLUE}<${PR_BLUE}<${PR_BOLD_BLACK}<${PR_BOLD_DEFAULT}${PR_CYAN} \
+%D{%R.%S %a %b\/%d\/%y}${PR_BLUE}|${PR_PWDCOLOR}%${PR_PWDLEN}<...<%~%<<\
+
+${PR_BOLD_BLUE}<${PR_BLUE}<${PR_BOLD_BLACK}< \
+%(!.${PR_BLUE}%n${PR_WHITE}.%n)@%m${PR_BLUE}|${PR_BOLD_DEFAULT}%h${PR_BOLD_BLUE}\
+%(?.. exit:%?)${PR_BOLD_BLUE}${PR_TMUX}${PR_JOBS}${PR_VCS}${PR_BATTERY}\
+${PR_BOLD_BLUE}${VIMODE}\
+
+${PR_BOLD_BLACK}>${PR_GREEN}>${PR_BOLD_GREEN}>\
+%{${reset_color}%} '
+
+    # continuation prompt
+    PROMPT2='${PR_BOLD_BLACK}>${PR_GREEN}>${PR_BOLD_GREEN}>\
+${PR_BOLD_DEFAULT} %_ ${PR_BOLD_BLACK}>${PR_GREEN}>\
+${PR_BOLD_GREEN}>%{${reset_color}%} '
+}
+
+setprompt

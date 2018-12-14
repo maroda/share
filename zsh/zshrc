@@ -1,0 +1,190 @@
+# Matt's MacOSX zshrc
+
+#	general options {{{
+
+HISTFILE=~/.zhistory
+HISTSIZE=65535
+SAVEHIST=60000
+setopt \
+	AUTOCD \
+	BRACE_CCL \
+	EXTENDED_HISTORY \
+	HIST_IGNORE_DUPS \
+	HIST_IGNORE_SPACE \
+	HIST_NO_STORE \
+	HIST_SAVE_NO_DUPS \
+	HIST_EXPIRE_DUPS_FIRST \
+	HIST_FIND_NO_DUPS \
+	INC_APPEND_HISTORY \
+	MULTIOS \
+	PUSHD_SILENT
+zstyle :compinstall filename '~/.zshrc'
+autoload -U compinit tetris zargs zcalc zmv zsh-mime-setup
+zmodload zsh/mathfunc
+zle -N tetris
+compinit
+zsh-mime-setup
+umask 022
+
+#}}}
+
+#	prompt {{{
+
+if [[ -f "/Users/matt/.zprompt" ]]; then
+	. /Users/matt/.zprompt
+else
+	declare PS1="[%n@%B%m%b %1d]%# ";
+	autoload promptinit
+	promptinit
+	prompt adam2
+	#prompt elite2
+fi
+#}}}
+
+#	variables {{{
+
+export GOPATH=$HOME/go
+export PATH=/usr/local/opt/sqlite/bin:/opt/bin:/opt/local/bin:/opt/local/sbin:/usr/local/bin:/usr/local/sbin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/X11R6/bin:/usr/X11R6/sbin:~/bin:$GOPATH/bin
+export LD_LIBRARY_PATH=/usr/lib:/usr/local/lib
+export HOSTNAME=`hostname`
+export EDITOR=/usr/bin/vim
+export VISUAL=$EDITOR
+export PAGER=`which less`
+export LESS=-cex4M
+export MANPATH=/usr/share/man:/usr/local/share/man
+export TMPDIR=/var/tmp
+export TY=`date +%Y%m%d`
+
+#}}}
+
+#	aliases {{{
+
+# Dev environment bootstrapping
+alias booc="source ~/bin/booc"
+
+# Hashicorp
+alias tf="/usr/local/bin/terraform"
+alias terrag='/usr/local/bin/terraform graph | dot -Tsvg > graph.svg && open graph.svg -a /Applications/Net/Google\ Chrome.app'
+
+# git
+alias git="/usr/local/bin/hub"
+alias gitdiff="git diff | less"
+alias gitst="git status"
+alias gitpl="git pull"
+alias gitco="git checkout "
+
+# various
+alias dv='dirs -v'
+alias dvx="dirstack=()"
+alias dz='. ~/.zshrc'
+alias grep='grep --color=always'
+alias gvim='gvim -reverse'
+alias h1='h 1'
+alias h='history'
+alias hgrep='h 1 | grep'
+alias history='history -fd'
+alias htless="sed -e '/^#.*$/d' -e '/^$/d' < httpd.conf | less"
+alias j='jobs'
+alias ll='ls -lH'
+alias lla='ls -la'
+alias ls='ls -FG'
+alias netstat='netstat -f inet'
+alias certchk='openssl x509 -in cert.pem -noout -text -purpose'
+alias pi='print $(( pi = 4.0 * atan(1.0) ))'
+alias plot='gnuplot'
+alias po='popd'
+alias pu='pushd'
+alias rsynca='rsync -avzP'
+alias rsyncan='rsync -avzPn'
+alias rxvt='rxvt -bg black -fg moccasin -geometry 100x30 &'
+alias sdf='sdiff -s'
+alias ssho='ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
+alias t='/usr/local/bin/tree -aCI .git' # colored output, show dotfiles, ignore .git
+alias ta='tmux att'
+alias ttcpc='/usr/bin/ttcp -t -s -v -f m -l16384 -n6400 -p10004 '
+alias ttcps='/usr/bin/ttcp -r -s -v -f m -l16384 -n6400 -p10004'
+alias vi=vim
+alias wiki="telnet telnet.wmflabs.org"
+
+# suffix aliases
+alias -s html=vim
+alias -s jinja2=vim
+
+# db
+alias innostat='mysql -e "show engine innodb status\G"'
+alias myrun='mysqladmin processlist | grep -v Sleep'
+alias myenv='mysqladmin ext var'
+alias mysss='echo "show slave status\G" | mysql'
+
+#}}}
+
+#	bindings {{{
+
+# vi key bindings
+bindkey -v
+# KEYTIMEOUT is in hundredths of a second, switch to command mode in 10ms
+export KEYTIMEOUT=1
+bindkey -M viins '^?' backward-delete-char
+bindkey -M viins '^H' backward-delete-char
+bindkey -M viins '^A' beginning-of-line
+bindkey -M viins '^E' end-of-line
+bindkey -M viins '^P' push-line
+
+# Incremental search is elite!
+bindkey -M vicmd "/" history-incremental-search-backward
+bindkey -M vicmd "?" history-incremental-search-forward
+
+# Search based on what you typed in already
+bindkey -M vicmd "//" history-beginning-search-backward
+bindkey -M vicmd "??" history-beginning-search-forward
+
+# other
+bindkey TET tetris
+bindkey '\e[1~' beginning-of-line
+bindkey '\e[3~' delete-char
+bindkey '\e[4~' end-of-line
+bindkey '^R' history-incremental-search-backward
+
+#}}}
+
+#	completion {{{
+
+zstyle ':completion::complete:*' use-cache 1
+zstyle ':completion:*:cd:*' ignored-patterns '(*/)#lost+found'
+
+myHosts=( craque@craque.net )
+sshHosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
+allHosts=( $myHosts )
+zstyle '*' hosts $allHosts
+
+#}}}
+
+#	terminal {{{
+
+chpwd() {
+  [[ -t 1 ]] || return
+  case $TERM in
+    sun-cmd) print -Pn "\e]l%~\e\\"
+      ;;
+    *xterm*|gnome-terminal|rxvt|(dt|k|E)term) print -Pn "\e]2;%~\a"
+      ;;
+  esac
+}
+
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
+#}}}
+
+#	miscellaneous {{{
+autoload -U +X bashcompinit && bashcompinit
+
+complete -o nospace -C /usr/local/bin/vault vault
+
+# fuzzy finder
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# ACME LetsEncrypt
+. "/Users/matt/.acme.sh/acme.sh.env"
+
+#}}}
+
