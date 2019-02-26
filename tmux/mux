@@ -1,0 +1,55 @@
+#!/usr/bin/env zsh
+#
+#	$TMUX pane creation script
+#		Version 3: Remove proprietary specifics
+#
+#	TODO: use zparseopts for better arg handling
+#	TODO: refer to V2 script on separating hostnames
+
+set -e
+setopt noglobalrcs
+TMUX=/usr/local/bin/tmux
+PROG=`basename $0`
+VERSION=3
+
+#	the host list
+[[ $# -eq 0 ]] && paneHostGroup=(192.168.1.32 192.168.1.33 192.168.1.34 192.168.1.35) || paneHostGroup=$@
+
+#	need to separate these IP addresses better, assinging from the arg isn't working yet
+# count individual hosts
+paneCnt=${(w)#paneHostGroup}
+# these need to be args
+paneUser='pirate'
+paneGroup='RPiC'
+paneLayout='tiled'
+
+#	start a new session
+$TMUX new-session -d -s $paneGroup
+
+#	step through the hosts and create panes
+p=1
+for paneHost in ${paneHostGroup}; do
+	case $paneCnt in
+		1)	# allow for one pane
+			$TMUX send-keys "ssh ${paneUser}@${paneHost}" C-m
+			$TMUX attach-session -t $paneGroup
+			exit 0
+			;;
+		*)	$TMUX send-keys "ssh ${paneUser}@${paneHost}" C-m
+			if [ $p = 2 ]; then
+				# split after first pane
+				$TMUX split-window -h
+			elif [ $p = $paneCnt ]; then
+				# all panes are open, select layout and attach
+				$TMUX select-layout $paneLayout
+				$TMUX attach-session -t $paneGroup
+				exit 0
+			else
+				# split before next pane
+				$TMUX split-window -v
+			fi
+			;;
+	esac
+	(( p+=1 ))
+done
+
