@@ -1,0 +1,167 @@
+" VIMRC
+
+" general {{{ 
+
+" vim settings override vi 
+set nocompatible
+
+" netrw settings
+let g:net_browse_split = 4
+let g:netrw_liststyle = 2
+
+set encoding=utf-8
+set nrformats-=octal
+
+" set leader to something more useable than \
+let mapleader = ","
+
+" version control used
+let g:signify_vcs_list = [ 'git' ]
+
+set backspace=indent,eol,start
+set nowrap
+set linebreak
+set scrolloff=3
+set sidescrolloff=5
+set history=1000
+set ruler
+set incsearch
+set hlsearch
+set ignorecase
+set smartcase
+set wildmenu
+set title
+
+" Make tab in v mode work like I think it should (keep highlighting):
+vmap <tab> >gv
+vmap <s-tab> <gv
+
+" quick config edit/reload
+nnoremap <leader>evi :e ~/.vimrc<CR>
+nnoremap <leader>rvi :source ~/.vimrc<CR>
+nnoremap <leader>ezs :e ~/.zshrc<CR>
+nnoremap <leader>rzs :source ~/.zshrc<CR>
+
+set printoptions=number:y
+
+" swap file location
+set directory=~/.vim/swap//
+
+" persistent undo
+set undofile
+set undodir=~/.vim/undo
+
+set nobackup
+set nowb
+
+"}}}
+
+" {{{ display behavior
+
+" vimwiki
+let g:vimwiki_folding = 'expr'
+
+syntax enable
+set number
+set relativenumber
+set cursorline
+" set cursorcolumn
+set autoindent
+filetype plugin indent on
+
+set nomodeline
+set background=dark
+" colorscheme solarized
+colorscheme zenburn
+
+" better YAML formatting
+autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
+
+set visualbell
+set tabstop=4
+set shiftwidth=2
+set expandtab
+
+" always display status bar
+set laststatus=2
+
+set cmdheight=1
+set statusline=[%02n]\ %f\ %(\[%M%R%H]%)%=\ %4l,%02c%2V\ %P%*
+set showcmd
+set showmode
+
+" buffer management
+set hidden
+
+" Display the number of lines in the range in the Status Line.
+com! -range -nargs=0 Lines :echo <line2> - <line1> + 1
+
+" showmatch: Show the matching bracket for the last ')'?
+set showmatch
+
+" watch for trailing whitespace
+match ErrorMsg '\s\+$'
+" autocmd BufWritePre * :%s/\s\+$//e
+
+" better tab visualization with 'set list'
+set list
+set listchars=tab:»·,trail:·
+set list!
+
+"}}}
+
+" plugins {{{
+execute pathogen#infect()
+Helptags
+filetype plugin indent on
+
+" fuzzy finder
+set rtp+=/usr/local/opt/fzf
+
+" erlang runtime
+" set runtimepath^=~/.vim/bundle/vim-erlang-runtime/
+
+"}}}
+
+" timestamps {{{
+map ,sdate  :let @z=strftime("%Y-%m-%d")<Cr>"zp
+map ,stime  :let @z=strftime("%H:%M")<Cr>"zp
+map ,sdt    :let @z=strftime("=== %Y%m%d %H:%M:%S ===")<Cr>"zp
+" }}}
+
+" vim-go {{{
+set autowrite
+let g:go_fmt_command = "goimports"
+" let g:go_fmt_fail_silently = 1
+let g:go_highlight_types = 1
+let g:go_highlight_fields = 1
+let g:go_highlight_functions = 1
+let g:go_highlight_methods = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_extra_types = 1
+autocmd FileType go nmap <Leader>c <Plug>(go-coverage-toggle) 
+autocmd FileType go nmap <Leader>r <Plug>(go-run) 
+autocmd FileType go nmap <Leader>t <Plug>(go-test) 
+" autocmd FileType go nmap <Leader>b <Plug>(go-build) 
+" 	OR
+" run :GoBuild or :GoTestCompile based on the go file
+function! s:build_go_files()
+	let l:file = expand('%')
+	if l:file =~# '^\f\+_test\.go$'
+		call go#test#Test(0, 1)
+	elseif l:file =~# '^\f\+\.go$'
+		call go#cmd#Build(0)
+	endif
+endfunction
+autocmd FileType go nmap <leader>b :<C-u>call <SID>build_go_files()<CR>
+" }}}
+
+" {{{ folding
+set foldmethod=marker
+set foldnestmax=10
+" set foldenable		" fold on open
+set foldlevelstart=1	" open with fold level x
+" toggle fold
+nnoremap <space> za		
+" }}}
+
