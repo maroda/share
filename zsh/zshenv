@@ -33,7 +33,5 @@ function sttb  () { setTermText 0 $@; }
 function sttab   () { setTermText 1 $@; }
 function sttit () { setTermText 2 $@; }
 
-# return IP addresses of instances matching the value of tag "Name", relies on env vars or default aws profile
-function inst () {
-	aws --region=${AWS_REGION} ec2 describe-instances --filters "Name=tag:Name,Values=${1}" "Name=instance-state-name,Values=running" --query "Reservations[*].Instances[*].[PublicIpAddress]" --output text
-}
+# launch vscode
+function code () { VSCODE_CWD="$PWD" open -n -b "com.microsoft.VSCode" --args $* ;}

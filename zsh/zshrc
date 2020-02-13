@@ -62,6 +62,9 @@ export TY=`date +%Y%m%d`
 # Dev environment bootstrapping
 alias booc="source ~/bin/booc"
 
+# Kubernetes
+alias kl="/usr/local/bin/kubectl"
+
 # Hashicorp
 alias tf="/usr/local/bin/terraform"
 alias terrag='/usr/local/bin/terraform graph | dot -Tsvg > graph.svg && open graph.svg -a /Applications/Net/Google\ Chrome.app'
@@ -72,6 +75,8 @@ alias gitdiff="git diff | less"
 alias gitst="git status"
 alias gitpl="git pull"
 alias gitco="git checkout "
+alias gitfp="git fetch && git pull"
+alias pugit="pushd ~/dev/github"
 
 # various
 alias dv='dirs -v'
@@ -87,9 +92,10 @@ alias htless="sed -e '/^#.*$/d' -e '/^$/d' < httpd.conf | less"
 alias j='jobs'
 alias ll='ls -lH'
 alias lla='ls -la'
+alias lr='ls -ltr'
 alias ls='ls -FG'
 alias netstat='netstat -f inet'
-alias certchk='openssl x509 -in cert.pem -noout -text -purpose'
+alias certchk='openssl x509 -noout -text -purpose -in'
 alias pi='print $(( pi = 4.0 * atan(1.0) ))'
 alias plot='gnuplot'
 alias po='popd'
@@ -99,11 +105,13 @@ alias rsyncan='rsync -avzPn'
 alias rxvt='rxvt -bg black -fg moccasin -geometry 100x30 &'
 alias sdf='sdiff -s'
 alias ssho='ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
+alias sshk='ssh -A -q -p26662 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
 alias t='/usr/local/bin/tree -aCI .git' # colored output, show dotfiles, ignore .git
 alias ta='tmux att'
 alias ttcpc='/usr/bin/ttcp -t -s -v -f m -l16384 -n6400 -p10004 '
 alias ttcps='/usr/bin/ttcp -r -s -v -f m -l16384 -n6400 -p10004'
 alias vi=vim
+alias vim="vim -c \"colorscheme zenburn\""
 alias wiki="telnet telnet.wmflabs.org"
 
 # suffix aliases
@@ -115,6 +123,10 @@ alias innostat='mysql -e "show engine innodb status\G"'
 alias myrun='mysqladmin processlist | grep -v Sleep'
 alias myenv='mysqladmin ext var'
 alias mysss='echo "show slave status\G" | mysql'
+
+# hosts
+alias mcraque='sshfs -p62202 craque@craque.net: ~/mnt/craque.net'
+alias goc='sttb craque && ssh -p62202 craque@craque.net'
 
 #}}}
 
@@ -152,10 +164,10 @@ bindkey '^R' history-incremental-search-backward
 zstyle ':completion::complete:*' use-cache 1
 zstyle ':completion:*:cd:*' ignored-patterns '(*/)#lost+found'
 
-myHosts=( craque@craque.net )
-sshHosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
-allHosts=( $myHosts )
-zstyle '*' hosts $allHosts
+#myHosts=( craque@craque.net )
+#sshHosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
+#allHosts=( $myHosts )
+#zstyle '*' hosts $allHosts
 
 #}}}
 
@@ -187,4 +199,3 @@ complete -o nospace -C /usr/local/bin/vault vault
 . "/Users/matt/.acme.sh/acme.sh.env"
 
 #}}}
-

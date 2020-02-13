@@ -18,6 +18,10 @@ let mapleader = ","
 " version control used
 let g:signify_vcs_list = [ 'git' ]
 
+" buffer switching
+nnoremap <C-b> <C-^>
+inoremap <C-b> <esc><C-^>
+
 set backspace=indent,eol,start
 set nowrap
 set linebreak
@@ -67,7 +71,6 @@ set relativenumber
 set cursorline
 " set cursorcolumn
 set autoindent
-filetype plugin indent on
 
 set nomodeline
 set background=dark
@@ -113,7 +116,11 @@ set list!
 " plugins {{{
 execute pathogen#infect()
 Helptags
+syntax on
 filetype plugin indent on
+
+" NERDTree
+map <C-n> :NERDTreeToggle<CR>
 
 " fuzzy finder
 set rtp+=/usr/local/opt/fzf
