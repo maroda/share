@@ -30,8 +30,8 @@ umask 022
 
 #	prompt {{{
 
-if [[ -f "/Users/matt/.zprompt" ]]; then
-	. /Users/matt/.zprompt
+if [[ -f "./.zprompt" ]]; then
+	. ./.zprompt
 else
 	declare PS1="[%n@%B%m%b %1d]%# ";
 	autoload promptinit
