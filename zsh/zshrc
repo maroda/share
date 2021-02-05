@@ -17,7 +17,8 @@ setopt \
 	HIST_FIND_NO_DUPS \
 	INC_APPEND_HISTORY \
 	MULTIOS \
-	PUSHD_SILENT
+	PUSHD_SILENT \
+    RM_STAR_SILENT
 zstyle :compinstall filename '~/.zshrc'
 autoload -U compinit tetris zargs zcalc zmv zsh-mime-setup
 zmodload zsh/mathfunc
@@ -30,8 +31,8 @@ umask 022
 
 #	prompt {{{
 
-if [[ -f "./.zprompt" ]]; then
-	. ./.zprompt
+if [[ -f "/Users/matt/.zprompt" ]]; then
+	. /Users/matt/.zprompt
 else
 	declare PS1="[%n@%B%m%b %1d]%# ";
 	autoload promptinit
@@ -53,7 +54,7 @@ export PAGER=`which less`
 export LESS=-cex4M
 export MANPATH=/usr/share/man:/usr/local/share/man
 export TMPDIR=/var/tmp
-export TY=`date +%Y%m%d`
+export NOW=`date +%Y%m%d%H%M`
 
 #}}}
 
@@ -65,18 +66,22 @@ alias booc="source ~/bin/booc"
 # Kubernetes
 alias kl="/usr/local/bin/kubectl"
 
+# AWS
+alias cid="/usr/local/bin/aws sts get-caller-identity"
+
 # Hashicorp
 alias tf="/usr/local/bin/terraform"
+alias tfvp="tf fmt && tf validate && tf plan"
+alias tfls="tf fmt && tf validate && tflint && tfsec && tf plan"
 alias terrag='/usr/local/bin/terraform graph | dot -Tsvg > graph.svg && open graph.svg -a /Applications/Net/Google\ Chrome.app'
 
 # git
 alias git="/usr/local/bin/hub"
-alias gitdiff="git diff | less"
-alias gitst="git status"
-alias gitpl="git pull"
-alias gitco="git checkout "
+alias gits="git status"
+alias gitc="git checkout "
 alias gitfp="git fetch && git pull"
-alias pugit="pushd ~/dev/github"
+alias gitm="git checkout main && git fetch && git pull"
+alias gitma="git checkout master && git fetch && git pull"
 
 # various
 alias dv='dirs -v'
@@ -107,11 +112,13 @@ alias sdf='sdiff -s'
 alias ssho='ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
 alias sshk='ssh -A -q -p26662 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
 alias t='/usr/local/bin/tree -aCI .git' # colored output, show dotfiles, ignore .git
+alias t4='/usr/local/bin/tree -L 4 -daCI .git' # level=4, dirs only, colored output, show dotfiles, ignore .git
 alias ta='tmux att'
+alias mux='tmuxinator'
 alias ttcpc='/usr/bin/ttcp -t -s -v -f m -l16384 -n6400 -p10004 '
 alias ttcps='/usr/bin/ttcp -r -s -v -f m -l16384 -n6400 -p10004'
 alias vi=vim
-alias vim="vim -c \"colorscheme zenburn\""
+# alias vim="vim -c \"colorscheme zenburn\""
 alias wiki="telnet telnet.wmflabs.org"
 
 # suffix aliases
@@ -164,11 +171,6 @@ bindkey '^R' history-incremental-search-backward
 zstyle ':completion::complete:*' use-cache 1
 zstyle ':completion:*:cd:*' ignored-patterns '(*/)#lost+found'
 
-#myHosts=( craque@craque.net )
-#sshHosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
-#allHosts=( $myHosts )
-#zstyle '*' hosts $allHosts
-
 #}}}
 
 #	terminal {{{
@@ -196,6 +198,14 @@ complete -o nospace -C /usr/local/bin/vault vault
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # ACME LetsEncrypt
-. "/Users/matt/.acme.sh/acme.sh.env"
+# . "/Users/matt/.acme.sh/acme.sh.env"
+
+# Google Cloud SDK.
+[[ -a '/Users/matt/dev/gcp/google-cloud-sdk/path.zsh.inc' ]] && . '/Users/matt/dev/gcp/google-cloud-sdk/path.zsh.inc'
+[[ -a '/Users/matt/dev/gcp/google-cloud-sdk/completion.zsh.inc' ]] && . '/Users/matt/dev/gcp/google-cloud-sdk/completion.zsh.inc'
+
+export GOOGLE_APPLICATION_CREDENTIALS=/Users/matt/sec/sa-key.json
+export PATH=/usr/local/opt/openssl@1.1/bin:$PATH
+export PATH=/usr/local/opt/yq@3/bin:$PATH
 
 #}}}

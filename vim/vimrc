@@ -1,8 +1,8 @@
 " VIMRC
 
-" general {{{ 
+" general {{{
 
-" vim settings override vi 
+" vim settings override vi
 set nocompatible
 
 " netrw settings
@@ -12,7 +12,6 @@ let g:netrw_liststyle = 2
 set encoding=utf-8
 set nrformats-=octal
 
-" set leader to something more useable than \
 let mapleader = ","
 
 " version control used
@@ -22,6 +21,10 @@ let g:signify_vcs_list = [ 'git' ]
 nnoremap <C-b> <C-^>
 inoremap <C-b> <esc><C-^>
 
+" mouse reporting
+" set mouse=a
+
+" misc
 set backspace=indent,eol,start
 set nowrap
 set linebreak
@@ -74,8 +77,7 @@ set autoindent
 
 set nomodeline
 set background=dark
-" colorscheme solarized
-colorscheme zenburn
+colorscheme solarized8
 
 " better YAML formatting
 autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
@@ -104,7 +106,9 @@ set showmatch
 
 " watch for trailing whitespace
 match ErrorMsg '\s\+$'
-" autocmd BufWritePre * :%s/\s\+$//e
+
+" remove trailing whitespace
+autocmd BufWritePre * :%s/\s\+$//e
 
 " better tab visualization with 'set list'
 set list
@@ -128,6 +132,11 @@ set rtp+=/usr/local/opt/fzf
 " erlang runtime
 " set runtimepath^=~/.vim/bundle/vim-erlang-runtime/
 
+" hashicorp
+let g:terraform_align=1
+let g:terraform_fold_sections=1
+let g:terraform_fmt_on_save=1
+
 "}}}
 
 " timestamps {{{
@@ -146,10 +155,10 @@ let g:go_highlight_functions = 1
 let g:go_highlight_methods = 1
 let g:go_highlight_operators = 1
 let g:go_highlight_extra_types = 1
-autocmd FileType go nmap <Leader>c <Plug>(go-coverage-toggle) 
-autocmd FileType go nmap <Leader>r <Plug>(go-run) 
-autocmd FileType go nmap <Leader>t <Plug>(go-test) 
-" autocmd FileType go nmap <Leader>b <Plug>(go-build) 
+autocmd FileType go nmap <Leader>c <Plug>(go-coverage-toggle)
+autocmd FileType go nmap <Leader>r <Plug>(go-run)
+autocmd FileType go nmap <Leader>t <Plug>(go-test)
+" autocmd FileType go nmap <Leader>b <Plug>(go-build)
 " 	OR
 " run :GoBuild or :GoTestCompile based on the go file
 function! s:build_go_files()
@@ -169,6 +178,6 @@ set foldnestmax=10
 " set foldenable		" fold on open
 set foldlevelstart=1	" open with fold level x
 " toggle fold
-nnoremap <space> za		
+nnoremap <space> za
 " }}}
 
