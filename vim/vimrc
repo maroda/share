@@ -21,6 +21,9 @@ let g:signify_vcs_list = [ 'git' ]
 nnoremap <C-b> <C-^>
 inoremap <C-b> <esc><C-^>
 
+" change to the dir of the file being edited and display
+nnoremap <leader>cd :cd %:p:h<CR>:pwd<CR>
+
 " mouse reporting
 " set mouse=a
 
