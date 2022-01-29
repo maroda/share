@@ -1,0 +1,27 @@
+# /Users/matt/.config/tmuxinator/craque.yml
+
+name: craque
+root: ~/
+
+startup_window: c1
+startup_pane: 1
+
+attach: true
+
+# layouts include tiled, even-horizontal, even-vertical, main-horizontal, main-vertical
+windows:
+  - c1:
+      layout: even-vertical
+      # synchronize: after
+      panes:
+        - ssh -A -p22 matt@craque.net
+        - ssh -A -p22 matt@craque.net
+        - ssh -A -p22 matt@craque.net
+        - ssh -A -p22 matt@craque.net
+  - c2:
+      layout: even-vertical
+      panes:
+        - ssh -A -p22 matt@craque.net
+        - ssh -A -p22 matt@craque.net
+        - ssh -A -p22 matt@craque.net
+        - ssh -A -p22 matt@craque.net

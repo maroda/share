@@ -23,6 +23,7 @@ zstyle :compinstall filename '~/.zshrc'
 autoload -U compinit tetris zargs zcalc zmv zsh-mime-setup
 zmodload zsh/mathfunc
 zle -N tetris
+FPATH=$(/usr/local/bin/brew --prefix)/share/zsh/site-functions:$FPATH
 compinit
 zsh-mime-setup
 umask 022
@@ -36,9 +37,11 @@ if [[ -f "/Users/matt/.zprompt" ]]; then
 else
 	declare PS1="[%n@%B%m%b %1d]%# ";
 	autoload promptinit
+    #PROMPT='%(?.%F{green}√.%F{red}?%?)%f %B%F{240}%m %1~%f%b %# '
+    #PROMPT='%B%F{240}%m %1~%f%b %# '
 	promptinit
 	prompt adam2
-	#prompt elite2
+	prompt elite2
 fi
 #}}}
 
@@ -51,14 +54,19 @@ export HOSTNAME=`hostname`
 export EDITOR=/usr/bin/vim
 export VISUAL=$EDITOR
 export PAGER=`which less`
-export LESS=-cex4M
+export LESS=eFRX
+#export LESS=-cex4M
 export MANPATH=/usr/share/man:/usr/local/share/man
 export TMPDIR=/var/tmp
 export NOW=`date +%Y%m%d%H%M`
+export ZULU=`TZ=Zulu /bin/date +%Y-%m-%dT%H:%m:%SZ`
 
 #}}}
 
 #	aliases {{{
+
+# Qio
+# alias qio="docker run -it --rm gcr.io/craque-420420/rainbow:latest qio --config ./rainbow.toml"
 
 # Dev environment bootstrapping
 alias booc="source ~/bin/booc"
@@ -108,6 +116,7 @@ alias pu='pushd'
 alias rsynca='rsync -avzP'
 alias rsyncan='rsync -avzPn'
 alias rxvt='rxvt -bg black -fg moccasin -geometry 100x30 &'
+alias idf='icdiff'
 alias sdf='sdiff -s'
 alias ssho='ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
 alias sshk='ssh -A -q -p26662 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
@@ -118,8 +127,7 @@ alias mux='tmuxinator'
 alias ttcpc='/usr/bin/ttcp -t -s -v -f m -l16384 -n6400 -p10004 '
 alias ttcps='/usr/bin/ttcp -r -s -v -f m -l16384 -n6400 -p10004'
 alias vi=vim
-# alias vim="vim -c \"colorscheme zenburn\""
-alias wiki="telnet telnet.wmflabs.org"
+alias zdt='TZ=Zulu /bin/date +%Y-%m-%dT%H:%m:%SZ'
 
 # suffix aliases
 alias -s html=vim
@@ -171,6 +179,11 @@ bindkey '^R' history-incremental-search-backward
 zstyle ':completion::complete:*' use-cache 1
 zstyle ':completion:*:cd:*' ignored-patterns '(*/)#lost+found'
 
+#myHosts=( craque@craque.net )
+#sshHosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
+#allHosts=( $myHosts )
+#zstyle '*' hosts $allHosts
+
 #}}}
 
 #	terminal {{{
@@ -204,6 +217,7 @@ complete -o nospace -C /usr/local/bin/vault vault
 [[ -a '/Users/matt/dev/gcp/google-cloud-sdk/path.zsh.inc' ]] && . '/Users/matt/dev/gcp/google-cloud-sdk/path.zsh.inc'
 [[ -a '/Users/matt/dev/gcp/google-cloud-sdk/completion.zsh.inc' ]] && . '/Users/matt/dev/gcp/google-cloud-sdk/completion.zsh.inc'
 
+## Blameless ##
 export GOOGLE_APPLICATION_CREDENTIALS=/Users/matt/sec/sa-key.json
 export PATH=/usr/local/opt/openssl@1.1/bin:$PATH
 export PATH=/usr/local/opt/yq@3/bin:$PATH

@@ -35,3 +35,42 @@ function sttit () { setTermText 2 $@; }
 
 # launch vscode
 function code () { VSCODE_CWD="$PWD" open -n -b "com.microsoft.VSCode" --args $* ;}
+
+# set my serviceaccount for gcp
+function gcpme () {
+    export GOOGLE_PROJECT=craque-420420
+    export GOOGLE_APPLICATION_CREDENTIALS=~matt/sa-key.json
+    ME='craque-sa'
+    PROJECT='craque-420420.iam.gserviceaccount.com'
+    gcloud auth activate-service-account ${ME}@${PROJECT} --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
+    gcloud config set account ${ME}@${PROJECT}
+}
+
+# set up a prometheus port-forward
+function pfs() {
+  POD="prometheus-peg-sumo-kube-kube-prometh-prometheus-0"
+  APILISTEN=9090
+  PODPORT=9090
+  print "Port-forwarding discovery initiated for $POD"
+  for c in `kubectl config get-contexts -o name`; do
+    print -n "Found $c ::: Connect to $APILISTEN to view $PODPORT ::: "
+    kubectl --context $c port-forward $POD $APILISTEN:$PODPORT &
+    let APILISTEN++
+  done
+}
+
+# connect to a prometheus port-forward set up with pfs()
+function pfc() {
+  SSH_HOST="craque.net"
+  SSH_PORT=22
+  PORT=9090
+  # assume there is only 1 if a count isn't given with 'pfc N'
+  [[ -z $1 ]] && COUNT=1 || COUNT=$1
+  c=0
+  while ( [[ $c < $COUNT ]] ); do
+    ssh -p${SSH_PORT} -N -q -L ${PORT}:127.0.0.1:${PORT} ${SSH_HOST} &
+    let PORT++
+    let c++
+  done
+}
+
