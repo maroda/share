@@ -3,7 +3,7 @@
 This requires a LocalStack profile in `.aws/config`:
 ```
 [profile localstack]
-role_arn = arn:aws:iam::197533337274:role/devops
+role_arn = arn:aws:iam::<IAM_ARN_ID>:role/devops
 source_profile = default
 endpoint_url = http://localhost:4566
 ```
