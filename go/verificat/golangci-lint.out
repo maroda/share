@@ -1,0 +1,43 @@
+>>> golangci-lint run
+cvwrite.go:143:14: Error return value of `fmt.Errorf` is not checked (errcheck)
+			fmt.Errorf("Could not create request")
+			          ^
+cvwrite.go:157:14: Error return value of `fmt.Errorf` is not checked (errcheck)
+			fmt.Errorf("Could not reach service at %q\n", url)
+			          ^
+cvwrite.go:165:15: Error return value of `fmt.Errorf` is not checked (errcheck)
+				fmt.Errorf("Could not read value at %q\n", url)
+				          ^
+filesystem.go:42:11: Error return value of `file.Seek` is not checked (errcheck)
+	file.Seek(0, io.SeekStart)
+	         ^
+filesystem.go:55:13: Error return value of `file.Write` is not checked (errcheck)
+		file.Write([]byte("[]"))
+		          ^
+filesystem.go:56:12: Error return value of `file.Seek` is not checked (errcheck)
+		file.Seek(0, io.SeekStart)
+		         ^
+filesystem.go:101:19: Error return value of `f.database.Encode` is not checked (errcheck)
+	f.database.Encode(f.almanac)
+	                 ^
+filesystem_test.go:22:15: Error return value of `tmpfile.Write` is not checked (errcheck)
+	tmpfile.Write([]byte(initialData))
+	             ^
+server.go:58:27: Error return value of `(*encoding/json.Encoder).Encode` is not checked (errcheck)
+	json.NewEncoder(w).Encode(p.store.GetAlmanac())
+	                         ^
+tape.go:14:17: Error return value of `t.file.Truncate` is not checked (errcheck)
+	t.file.Truncate(0)
+	               ^
+tape.go:15:13: Error return value of `t.file.Seek` is not checked (errcheck)
+	t.file.Seek(0, io.SeekStart)
+	           ^
+tape_test.go:14:12: Error return value of `tape.Write` is not checked (errcheck)
+	tape.Write([]byte("abc"))
+	          ^
+tape_test.go:16:11: Error return value of `file.Seek` is not checked (errcheck)
+	file.Seek(0, io.SeekStart)
+	         ^
+tools.go:49:12: Error return value of `fs.WalkDir` is not checked (errcheck)
+	fs.WalkDir(fileSystem, ".", func(p string, d fs.DirEntry, err error) error {
+	          ^
