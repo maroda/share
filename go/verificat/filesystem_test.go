@@ -47,22 +47,19 @@ func TestFileSystemStore(t *testing.T) {
 
 		got := store.GetAlmanac()
 
-		// This comes back sorted
+		// This comes back sorted!
 		want := []WMService{
 			{"Craque", 33, 98},
 			{"Mattic", 10, 99},
 		}
 
-		/*	 OK! TIME TO FIX THE ALMANAC HERE	*/
-		// it needs to return the three values,
-		// and that needs to be set with runVerification
-		// when it handles SvcTestDB and can add to WMService
+		// Almanac returns Name, ID, Score
 		assertAlmanac(t, got, want)
 
-		// read again
+		// read again to test tape rewind
 		got = store.GetAlmanac()
-		assertAlmanac(t, got, want)
 
+		assertAlmanac(t, got, want)
 	})
 
 	// Get a service LastID from the almanac database
@@ -177,7 +174,41 @@ func TestFileSystemStore(t *testing.T) {
 		// read again
 		got = store.GetAlmanac()
 		assertAlmanac(t, got, want)
+	})
 
+	t.Run("correctly return zero when TriggerID is not found", func(t *testing.T) {
+		database, cleanDatabase := createTempFile(t, `[
+			{"Name": "Mattic", "LastID": 10, "Score": 99},
+			{"Name": "Craque", "LastID": 33, "Score": 98}]`)
+		defer cleanDatabase()
+
+		store, err := NewFSStore(database)
+		if err != nil {
+			log.Fatalf("New services: problem creating file system service store, %v ", err)
+		}
+
+		// Trying to get a service that isn't in the database
+		// will cause the function to return 0
+		got := store.GetTriggerID("Pepper")
+		want := 0
+		assertIDEquals(t, got, want)
+	})
+
+	t.Run("correctly return zero when GetScore is not found", func(t *testing.T) {
+		database, cleanDatabase := createTempFile(t, `[
+			{"Name": "Mattic", "LastID": 10, "Score": 99},
+			{"Name": "Craque", "LastID": 33, "Score": 98}]`)
+		defer cleanDatabase()
+
+		store, err := NewFSStore(database)
+		if err != nil {
+			log.Fatalf("Store LastID: problem creating file system service store, %v ", err)
+		}
+
+		// If the service doesn't exist, getting its score will return 0
+		got := store.GetScore("Pepper")
+		want := 0
+		assertIDEquals(t, got, want)
 	})
 }
 

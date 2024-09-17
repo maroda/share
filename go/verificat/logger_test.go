@@ -1,24 +1,35 @@
 package main
 
-import "testing"
+import (
+	"context"
+	"log/slog"
+	"testing"
+)
 
-/*
-func TestLogger(t *testing.T) {
+// WIP Logger function
+func TestLogInfoMsg(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("produces a log", func(t *testing.T) {
+		logMessage := "Craque Log Message"
 
-		// logErrToPass := NewError()
-		want := ""
-		got := Logger("There was an error", logErrToPass)
-
-		assertLogBody(t, got, want)
-
+		LogInfoMsg(ctx, logMessage)
 	})
 }
-*/
 
-func assertLogBody(t testing.TB, got, want string) {
+// completes with a validation that the level passed is Enabled()
+func TestCreateLogger(t *testing.T) {
+	level := slog.LevelDebug
+	app := "verificat"
+	want := true
+	got := createLogger(level, app)
+
+	assertBool(t, got, want)
+}
+
+func assertBool(t testing.TB, got, want bool) {
 	t.Helper()
 	if got != want {
-		t.Errorf("log body is wrong, got %q want %q", got, want)
+		t.Errorf("log level is wrong, got %t want %t", got, want)
 	}
 }

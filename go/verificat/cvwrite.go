@@ -118,37 +118,6 @@ type wwwFetch struct {
 	Answer string
 }
 
-// This extracts data from a URL.
-// It doesn't do any auth, it assumes the URL will be available.
-func extract(url string) chan wwwFetch {
-	// make a channel for fetching
-	www := make(chan wwwFetch)
-
-	// fetch the value
-	go func() {
-		var client http.Client
-
-		r, err := client.Get(url)
-		if err != nil {
-			fmt.Errorf("Could not reach service at %q\n", url)
-		}
-		defer r.Body.Close()
-
-		// HTTP status code has to be 200 to work
-		if r.StatusCode == http.StatusOK {
-			body, err := io.ReadAll(r.Body)
-			if err != nil {
-				fmt.Errorf("Could not read value at %q\n", url)
-			}
-			bodyString := string(body)
-			rval := &wwwFetch{Answer: bodyString}
-			www <- *rval
-		}
-		close(www)
-	}()
-	return www
-}
-
 // Extract data from GitHub
 // (i.e. data with the need to set headers, which should be generalized)
 func extractGitHub(url string) chan wwwFetch {

@@ -76,6 +76,7 @@ func (s *SvcConfig) wmOwner() string {
 
 // NOT IN USE YET, but the code works
 // wmLabels. Should return a label we want.
+/*
 func (s *SvcConfig) wmLabels(c *backstage.ComponentEntityV1alpha1, lbl string) string {
 	var kv string
 	// Labels: map
@@ -92,6 +93,7 @@ func (s *SvcConfig) wmLabels(c *backstage.ComponentEntityV1alpha1, lbl string) s
 	// Return value for printing
 	return kv
 }
+*/
 
 // Test this service for Production Readiness
 func ReadinessRead(i SvcCat) (string, error) {

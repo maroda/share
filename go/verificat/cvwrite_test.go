@@ -33,24 +33,26 @@ func (db *mockSvcTestDB) TestItem(svc string) *TestReturn {
 
 // Is Readiness Display correctly writing results?
 func TestReadinessDisplay(t *testing.T) {
-	service := "admin"
-	mockRD := &mockSvcTestDB{Service: service, Datetime: 1724367242, Owner: "code-owners-admin", Score: 0}
-	buffer := bytes.Buffer{}
+	t.Run("Is Readiness Display correctly writing results?", func(t *testing.T) {
 
-	// ReadinessDisplay calls TestItem, which needs to send us more data
-	err := ReadinessDisplay(mockRD, service, &buffer)
-	got := buffer.String()
+		service := "admin"
+		mockRD := &mockSvcTestDB{Service: service, Datetime: 1724367242, Owner: "code-owners-admin", Score: 0}
+		buffer := bytes.Buffer{}
 
-	// Score should be initialized to 100 each time, only a subsequent test will change it
-	want := "true, \"mock-admin-group\", \"mock-developer-group\", false, 100"
+		// ReadinessDisplay calls TestItem, which needs to send us more data
+		err := ReadinessDisplay(mockRD, service, &buffer)
+		got := buffer.String()
 
-	// What we're comparing is the buffer string, not the structs.
-	if diff := cmp.Diff(got, want); diff != "" {
-		t.Error(diff)
-	}
+		// Score should be initialized to 100 each time, only a subsequent test will change it
+		want := "true, \"mock-admin-group\", \"mock-developer-group\", false, 100"
 
-	//assertString(t, got, want)
-	assertError(t, err, nil)
+		// What we're comparing is the buffer string, not the structs.
+		if diff := cmp.Diff(got, want); diff != "" {
+			t.Error(diff)
+		}
+
+		assertError(t, err, nil)
+	})
 }
 
 // TestFetch
