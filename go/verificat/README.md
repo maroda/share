@@ -1,5 +1,7 @@
 # Verificat
 
+[![Publish Docker Image to Packages](https://github.com/GhostGroup/verificat/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/GhostGroup/verificat/actions/workflows/docker-publish.yml)
+
 ## About
 
 - **Meaning**: Short for "Verify Catalog"
@@ -72,7 +74,6 @@ TDD allows us to be iterative. While building the automation, we need to make su
 
 Our initial approach is to tackle one test (or type) at a time, but Verificat will run tests in parallel.
 
-
 ## Verify Catalog
 
 ### Verification vs Validation
@@ -103,9 +104,36 @@ Metrics won't be as important as Logs with Traces.
 
 ## Operations
 
-1. Run locally with: `docker run -ti --rm --name verificat -p 4330:4330 verificat:latest`
+> [!NOTE]
+> Your Docker engine must be authenticated with GitHub Packages.  If you haven't already, please follow the one-time [GitHub Packages Docker setup](https://github.com/GhostGroup/hotbox/wiki/Authenticate-to-GitHub-Packages-Container-Docker-Registry).
+
+1. Run locally with: `docker run -ti --rm --name verificat -p 4330:4330 ghcr.io/ghostgroup/verificat:develop`
 2. In another terminal, run a test against the `admin` service: `curl -X POST http://localhost:4330/v0/admin`
-4. Get results for all services: `curl http://localhost:4330/v0/almanac`
+3. Get results for all services: `curl http://localhost:4330/v0/almanac`
+
+### Full Service Report
+
+There is list of Weedmaps services to test in `testdata/servicelist.txt`.
+
+To use this and populate the database with new runs for everything, run a while command with the file like so (example in `zsh`):
+
+```
+while read z; do curl -X POST http://localhost:4330/v0/${z}; done < =(cat servicelist.txt)
+```
+
+## Data
+
+### Filestore
+
+Currently the app expects the database file `almanac.db.json` to be present in its running directory. It does not create a new file.
+
+### New Entries
+
+To add an entry to the database:
+
+1. Issue the same command you would to run a test.
+2. This does _not_ run a test, but creates a new row in the database with the new service and initializes the score to `100`.
+3. Run the same command again to get a real test result.
 
 ## References
 

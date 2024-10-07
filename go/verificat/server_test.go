@@ -79,25 +79,27 @@ func TestGETServices(t *testing.T) {
 	server := NewVerificationServ(&store)
 
 	t.Run("returns admin's LastID", func(t *testing.T) {
-		request := newGetTriggerIDReq("admin")
+		service := "admin"
+		request := newGetTriggerIDReq(service)
 		// Use ResponseRecorder for a canned response
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
 
 		assertStatus(t, response.Code, http.StatusOK)
-		assertResponseBody(t, response.Body.String(), "20")
+		assertResponseBody(t, response.Body.String(), "LastID for "+service+": 20\n")
 	})
 
 	t.Run("returns Craque's LastID", func(t *testing.T) {
-		request := newGetTriggerIDReq("Craque")
+		service := "Craque"
+		request := newGetTriggerIDReq(service)
 		// Use ResponseRecorder for a canned response
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
 
 		assertStatus(t, response.Code, http.StatusOK)
-		assertResponseBody(t, response.Body.String(), "10")
+		assertResponseBody(t, response.Body.String(), "LastID for "+service+": 10\n")
 	})
 
 	t.Run("returns 404 on missing services", func(t *testing.T) {
@@ -161,7 +163,7 @@ func TestRecordingIDsAndRetrievingThem(t *testing.T) {
 	server.ServeHTTP(response, newGetTriggerIDReq(service))
 	assertStatus(t, response.Code, http.StatusOK)
 
-	assertResponseBody(t, response.Body.String(), "3")
+	assertResponseBody(t, response.Body.String(), "LastID for "+service+": 3\n")
 }
 
 func newGetTriggerIDReq(name string) *http.Request {

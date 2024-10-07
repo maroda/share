@@ -1,8 +1,10 @@
 package main
 
 import (
+	"io"
 	"io/fs"
 	"log"
+	"os"
 	"path/filepath"
 
 	"github.com/joho/godotenv"
@@ -80,4 +82,17 @@ func NewConfigFromFS(k string, fileSystem fs.FS) (string, error) {
 		and I need to pull my tests further out...
 	*/
 	return getEnvVar(k, foundEnv)
+}
+
+// When we write, we write from the beginning.
+// This type takes a file and makes sure we're at the start.
+type tape struct {
+	file *os.File
+}
+
+// Return the file start location of 0 for writing.
+func (t *tape) Write(p []byte) (n int, err error) {
+	t.file.Truncate(0)
+	t.file.Seek(0, io.SeekStart)
+	return t.file.Write(p)
 }

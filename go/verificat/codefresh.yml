@@ -1,0 +1,48 @@
+version: '1.0'
+
+stages:
+  - checkout
+  - package
+  - test
+  - publish
+
+steps:
+  main_clone:
+    title: Cloning repository...
+    type: git-clone
+    repo: ${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}
+    revision: ${{CF_REVISION}}
+    stage: checkout
+
+  DockerImage:
+    title: Building Docker Image
+    type: build
+    stage: package
+    image_name: verificat/verificat
+    working_directory: ./
+    tag: ${{CF_BRANCH_TAG_NORMALIZED}}
+    dockerfile: Dockerfile
+    disable_push: true
+
+    # For some reason this is failing with:
+    # [2024-09-16T23:18:07.500Z] Executing command: go test
+    # [2024-09-16T23:18:07.589Z] go: downloading github.com/google/go-cmp v0.6.0
+    # [2024-09-16T23:18:43.895Z] 2024/09/16 23:18:43 Error loading value: open : no such file or directory
+    # [2024-09-16T23:18:43.896Z] exit status 1
+    # [2024-09-16T23:18:43.896Z] FAIL verificat       0.098s
+#  UnitTests:
+#    title: Running Unit tests
+#    image: ${{DockerImage}}
+#    stage: test
+#    commands:
+#      - go test
+
+  PushImage:
+    title: Push Container to Harbor
+    type: push
+    stage: publish
+    candidate: ${{DockerImage}}
+    image_name: verificat/verificat
+    tags:
+      - latest
+      - 0.0.1

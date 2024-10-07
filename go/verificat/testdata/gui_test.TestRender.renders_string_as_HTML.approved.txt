@@ -1,0 +1,28 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Most Recent Almanac</title>
+</head>
+<body style="background-color:forestgreen;">
+<main>
+
+<h1>Most Recent Almanac</h1>
+
+<p><b>Verificat</b> is an autonomous agent built to perform tests against a checklist of Production Readiness items. The <b>large number</b> is the Score, which starts at 100 and loses points for each failed verification test. The <b>small number</b> is the count of verification runs to-date. The <a href="https://github.com/GhostGroup/verificat/blob/develop/README.md"><i>Verificat README</i></a> has deeper details.</p>
+
+<p>To run a test for a service, send this to the API:</p>
+<blockquote><pre>curl -X POST http://verificat:4330/v0/WM_SERVICE</pre></blockquote>
+
+<p>To get all scores for all services in JSON:</p>
+<blockquote><pre>curl http://verificat:4330/v0/almanac</pre></blockquote>
+
+This is content, whether you like it or not.
+
+</main>
+<footer>
+© 2024 MPL-2.0 <i><b>SRE & Team Diesel</b></i>
+</footer>
+</body>
+</html>

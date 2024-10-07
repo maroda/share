@@ -1,12 +1,18 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
+)
+
+const (
+	webTimeout time.Duration = 10 * time.Second
 )
 
 type SvcTest interface {
@@ -34,42 +40,58 @@ type TestReturn struct {
 	Score   int
 }
 
+const (
+	ghDomain  = "https://api.github.com"
+	ghPreURI  = "/repos/GhostGroup/"
+	ghGetPATH = "/contents/.github/CODEOWNERS"
+)
+
+// urlCat is variadic, concatenating any set of strings into a URL.
+// It can be used to embed a dynamic string alongside static parts of a URI.
+// /u/ is a slice of strings used to build completeURL
+func urlCat(u ...string) string {
+	var completeURL string
+	for _, p := range u {
+		completeURL = completeURL + p
+	}
+	slog.Info("New Source Created", slog.String("URL", completeURL))
+	return completeURL
+}
+
 // This is returning a test result to ReadinessDisplay
 // Currently this represents the "Owner" test between Backstage and GitHub
 func (s *SvcTestDB) TestItem(svc string) *TestReturn {
 	// Check the owner field. If it's populated, return true. If not, return false.
 	var present, works bool
 
-	// REFACTOR ::: Should the Fetch() method be on SvcTest?
-	// 		This way... it can be used here: i.Fetch() whatever...
-	// Build the source address
-	// TODO: This should actually belong in the github function to make TestItem more general
-	source := "https://api.github.com"
-	preURI := "/repos/GhostGroup/"
-	getPATH := "/contents/.github/CODEOWNERS"
-	fetchURL := source + preURI + svc + getPATH
-	reality, err := Fetch(fetchURL)
+	reality, err := Fetch(urlCat(ghDomain, ghPreURI, svc, ghGetPATH))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Verify the Owner for any WMService in Backstage
+	// Check the Owner for any WMService in Backstage
 	if s.Owner == "" {
+		// Validation has failed, the field is empty
 		present = false
 		s.Score--
-		log.Println("ERROR: Owner field is empty in Backstage!")
-		log.Println("INFO: Score set to: ", s.Score)
+		slog.Error("Invalid Field", slog.String("Owner", s.Owner))
+		// Verification automatically fails
+		s.Score--
+		slog.Info("New Adjustment", slog.Int("Score", s.Score))
 	} else {
+		// Validation succeeds!
 		present = true
+		// Now check if it is equal to the retrieved source of truth
 		if s.Owner != reality {
+			// Verification has failed
 			works = false
+			slog.Warn("Unequal Field", slog.String("Owner", s.Owner), slog.String("Reality", reality))
 			s.Score--
-			log.Printf("WARNING: Backstage value %q does not equal source %q", s.Owner, reality)
-			log.Println("INFO: Score set to: ", s.Score)
+			slog.Info("New Adjustment", slog.Int("Score", s.Score))
 		} else {
-			log.Printf("MATCH: Source %q in Backstage is: %q", reality, s.Owner)
+			// Verification succeeds!
 			works = true
-			log.Println("INFO: Score remains at: ", s.Score)
+			slog.Info("Matching Field", slog.String("Owner", s.Owner), slog.String("Reality", reality), slog.Int("Score", s.Score))
 		}
 	}
 
@@ -86,12 +108,14 @@ func (s *SvcTestDB) TestItem(svc string) *TestReturn {
 func ReadinessDisplay(i SvcTest, service string, w io.Writer) error {
 	// Our first test is just to verify that the Codeowners field is populated in Backstage.
 	returnedTest := i.TestItem(service)
+	returnOut, err := json.Marshal(returnedTest)
+	if err != nil {
+		slog.Error("Failed to marshal struct to JSON", slog.Any("Error", err))
+	}
 
-	// TODO: This should be a struct marshalled into json
-	fmt.Fprintf(w, "%t, %q, %q, %t, %d", returnedTest.Present, returnedTest.Owner, returnedTest.Reality, returnedTest.Works, returnedTest.Score)
-
-	// currently this is data manipulation, nothing here throws an error (yet)
-	return nil
+	// Print the JSON bytestring and return
+	fmt.Fprintf(w, string(returnOut))
+	return err
 }
 
 // Fetch. Initiate data retrieval from test sources.
@@ -148,8 +172,7 @@ func extractGitHub(url string) chan wwwFetch {
 		req.Header.Add("Authorization", authHeader)
 
 		// Create a new Client pointer with a configured timeout
-		// TODO: make this timeout a global setting/const?
-		client := &http.Client{Timeout: 10 * time.Second}
+		client := &http.Client{Timeout: webTimeout}
 
 		// Perform the actual Get.
 		r, err := client.Do(req)
