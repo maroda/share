@@ -5,6 +5,7 @@ LABEL org.opencontainers.image.source https://github.com/GhostGroup/verificat
 EXPOSE 4330
 WORKDIR /go/src/verificat/
 COPY . .
-RUN go get .
+# RUN go get .
+RUN go mod tidy
 RUN go build -o /bin/verificat
 ENTRYPOINT ["/bin/verificat"]

@@ -8,11 +8,14 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
 const (
 	webTimeout time.Duration = 10 * time.Second
+	prefixGH                 = "* @GhostGroup/"
+	suffixGH                 = "\n"
 )
 
 type SvcTest interface {
@@ -61,20 +64,27 @@ func urlCat(u ...string) string {
 // This is returning a test result to ReadinessDisplay
 // Currently this represents the "Owner" test between Backstage and GitHub
 func (s *SvcTestDB) TestItem(svc string) *TestReturn {
-	// Check the owner field. If it's populated, return true. If not, return false.
+	// Check the owner field.
+	// Validation: If it's populated, return true.
+	// Verification: If it's populated with the correct string, return true.
+
 	var present, works bool
 
-	reality, err := Fetch(urlCat(ghDomain, ghPreURI, svc, ghGetPATH))
+	// Get the actual value from CODEOWNERS in the matching GitHub repo
+	fetchreal, err := Fetch(urlCat(ghDomain, ghPreURI, svc, ghGetPATH))
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("Cannot Fetch", slog.Any("Error", err))
 	}
+
+	// Strip off the CODEOWNERS formatting
+	reality := strings.TrimPrefix(strings.TrimSuffix(fetchreal, suffixGH), prefixGH)
 
 	// Check the Owner for any WMService in Backstage
 	if s.Owner == "" {
 		// Validation has failed, the field is empty
 		present = false
 		s.Score--
-		slog.Error("Invalid Field", slog.String("Owner", s.Owner))
+		slog.Warn("Empty Field", slog.String("Owner", s.Owner))
 		// Verification automatically fails
 		s.Score--
 		slog.Info("New Adjustment", slog.Int("Score", s.Score))
@@ -94,8 +104,6 @@ func (s *SvcTestDB) TestItem(svc string) *TestReturn {
 			slog.Info("Matching Field", slog.String("Owner", s.Owner), slog.String("Reality", reality), slog.Int("Score", s.Score))
 		}
 	}
-
-	// I have ScvTestDB here so I need to put a value in it
 
 	// This will be included in the API return value
 	return &TestReturn{Present: present, Owner: s.Owner, Reality: reality, Works: works, Score: s.Score}

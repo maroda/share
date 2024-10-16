@@ -1,6 +1,6 @@
 # Verificat
 
-[![Publish Docker Image to Packages](https://github.com/GhostGroup/verificat/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/GhostGroup/verificat/actions/workflows/docker-publish.yml)
+[![Codefresh build status]( https://g.codefresh.io/api/badges/pipeline/weedmaps/Verificat%2Fdeploy-build?type=cf-1&key=eyJhbGciOiJIUzI1NiJ9.NWY3NzgwZjczODNhMGEyMTJiZDVlNzMy.Id38geQ5uFQ8Tvx3aEW2Tx0Ud9LTTS8aVCMo5woqEgA)]( https://g.codefresh.io/pipelines/edit/new/builds?id=66e8adfc3d65134079c4c938&pipeline=deploy-build&projects=Verificat&projectId=66e4c9f983d1b3fdebbeba27)
 
 ## About
 
@@ -92,6 +92,12 @@ Verificat seeks to be as independent as possible so that it can measure as close
 
 It is not meant to be dependent on any other service, nor provide dependencies downstream. It is a data gatherer, analyst, and presenter. Its inputs are the Services we run and the tests we want to display a State of Readiness. The outputs are the Scores.
 
+### Can I use it in my deployment pipeline?
+
+Verificat is not built to be part of a deployment pipeline. It should not be used as a blocking mechanism for automation. It is not currently built to be highly-available in order to guarantee that Production Readiness Score data is available.
+
+However, Verificat API data can be used for non-blocking actions (for instance, Codefresh has a `fast-fail` setting that will continue the pipeline even if this value fails).
+
 ### Notifications
 
 A facility to send email alerting would be a good initial notification service.
@@ -113,10 +119,11 @@ Metrics won't be as important as Logs with Traces.
 
 ### Full Service Report
 
-There is list of Weedmaps services to test in `testdata/servicelist.txt`.
+There are two ways to see a full report.
 
+1. Browse to the homepage, locally that will look like: <http://localhost:4330>
+1. There is list of Weedmaps services to test in `testdata/servicelist.txt`.
 To use this and populate the database with new runs for everything, run a while command with the file like so (example in `zsh`):
-
 ```
 while read z; do curl -X POST http://localhost:4330/v0/${z}; done < =(cat servicelist.txt)
 ```

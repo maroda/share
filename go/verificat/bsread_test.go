@@ -2,13 +2,10 @@ package main
 
 import (
 	"testing"
-
-	"github.com/tdabasinskas/go-backstage/v2/backstage"
 )
 
 // Mock data for running Production ReadinessRead
 type mockSvcConfig struct {
-	Origin     *backstage.ComponentEntityV1alpha1
 	URL        string
 	Service    string
 	Datetime   int64

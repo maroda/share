@@ -5,14 +5,17 @@ import (
 	"log/slog"
 )
 
+// TODO: svgStart needs to be broken up more to programmatically set the viewBox height
 const (
 	// Changing the /viewBox/ here can have drastic scale effects
+	// A width of 200 in the viewBox when the width of the SVG is 400
+	// will effectively double the relative scale of all shapes in the viewBox
 	svgStart = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg xmlns="http://www.w3.org/2000/svg"
-    width="100%"
-    height="100%"
-	viewBox="0 0 300 300"
+    width="400px"
+    height="auto"
+	viewBox="0 0 200 800"
     version="2.0">`
 	svgEnd = `</svg>`
 )

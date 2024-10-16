@@ -2,8 +2,8 @@ version: '1.0'
 
 stages:
   - checkout
+#  - test
   - package
-  - test
   - publish
 
 steps:
@@ -14,16 +14,7 @@ steps:
     revision: ${{CF_REVISION}}
     stage: checkout
 
-  DockerImage:
-    title: Building Docker Image
-    type: build
-    stage: package
-    image_name: verificat/verificat
-    working_directory: ./
-    tag: ${{CF_BRANCH_TAG_NORMALIZED}}
-    dockerfile: Dockerfile
-    disable_push: true
-
+    #   -- this might be failing because of an integration test with (private) backstage --
     # For some reason this is failing with:
     # [2024-09-16T23:18:07.500Z] Executing command: go test
     # [2024-09-16T23:18:07.589Z] go: downloading github.com/google/go-cmp v0.6.0
@@ -37,12 +28,25 @@ steps:
 #    commands:
 #      - go test
 
+  DockerImage:
+    title: Building Docker Image
+    type: build
+    stage: package
+    image_name: verificat/verificat
+    working_directory: ./
+    tag: ${{CF_BRANCH_TAG_NORMALIZED}}
+    dockerfile: Dockerfile
+    disable_push: false
+
   PushImage:
-    title: Push Container to Harbor
+    title: Push Container to GitHub Package Registry
     type: push
     stage: publish
     candidate: ${{DockerImage}}
-    image_name: verificat/verificat
+    image_name: ghostgroup/verificat
+    registry: github-packages
+    fail_fast: false
+    strict_fail_fast: true
     tags:
       - latest
       - 0.0.1
