@@ -70,7 +70,7 @@ func (p *VerificationServ) homeHandler(w http.ResponseWriter, r *http.Request) {
 	// This is where BuildSVG needs to operate first
 	currAlmanac := p.store.GetAlmanac()
 	aWeb := &AlmanacWeb{
-		Title:     "Verificat | <i>weedmaps production readiness scores</i>",
+		Title:     "Verificat | weedmaps production readiness scores",
 		Content:   BuildSVG(&currAlmanac, sc),
 		FullScore: currAlmanac,
 	}
@@ -153,23 +153,23 @@ func (p *VerificationServ) runVerification(w http.ResponseWriter, service string
 	// We don't need a return, it updates the struct
 	_, err = ReadinessRead(svcconf)
 	if err != nil {
-		fmt.Errorf("ReadinessRead had a problem: %+v", err)
+		slog.Error("ReadinessRead Failed", slog.Any("Error", err))
+	} else {
+		// ReadinessDisplay expects an interface with this struct
+		// These values have been filled in by ReadinessRead() above
+		// Score is initialized to 100 each time,
+		//	then decremented on each failed test
+		//	that is handled by ReadinessDisplay.
+		stests := &SvcTestDB{Datetime: svcconf.Datetime, Owner: svcconf.Owner, Score: 100}
+
+		// Send test metadata to ReadinessDisplay, which launches tests and displays the results.
+		// w == http.ResponseWriter, which satisfies io.Writer
+		err = ReadinessDisplay(stests, service, w)
+		if err != nil {
+			slog.Error("ReadinessDisplay Failed", slog.Any("Error", err))
+		}
+
+		// Initiate the TriggerID sequence that is used to set WMService.Score in the database.
+		p.store.TriggerID(service, stests.Score)
 	}
-
-	// ReadinessDisplay expects an interface with this struct
-	// These values have been filled in by ReadinessRead() above
-	// Score is initialized to 100 each time,
-	//	then decremented on each failed test
-	//	that is handled by ReadinessDisplay.
-	stests := &SvcTestDB{Datetime: svcconf.Datetime, Owner: svcconf.Owner, Score: 100}
-
-	// Send test metadata to ReadinessDisplay, which launches tests and displays the results.
-	// w == http.ResponseWriter, which satisfies io.Writer
-	err = ReadinessDisplay(stests, service, w)
-	if err != nil {
-		fmt.Errorf("ReadinessDisplay had a problem: %+v", err)
-	}
-
-	// Initiate the TriggerID sequence that is used to set WMService.Score in the database.
-	p.store.TriggerID(service, stests.Score)
 }

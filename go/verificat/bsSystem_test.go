@@ -45,6 +45,7 @@ func TestReadSystemBS(t *testing.T) {
 		}
 	})
 
+	// Test that the SystemNotRecognized error is thrown
 	t.Run("Handles only Systems it knows about", func(t *testing.T) {
 		c, err := backstage.NewClient(backstageURL, "default", nil)
 		assertError(t, err, nil)
@@ -56,12 +57,14 @@ func TestReadSystemBS(t *testing.T) {
 			Client  *backstage.Client
 		}{
 			{"Core-App", "core-app", "", c},
+			{"Prince", "Revolution", "", c},
+			{"Rubidium-Strontium", "Isochron", "", c},
 		}
 
 		for _, tt := range readTests {
 			got, service, err := ReadSystemBS(tt.Service, c)
 			want := tt.Expect
-			assertError(t, err, nil)
+			assertError(t, err, SystemNotRecognized)
 			if diff := cmp.Diff(got, want); diff != "" {
 				t.Error(diff)
 				t.Errorf("For '%v' the service looks like\n: %v", tt.Service, service)

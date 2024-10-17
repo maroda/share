@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/tdabasinskas/go-backstage/v2/backstage"
@@ -16,6 +17,8 @@ type BSSystem struct {
 // BSCE is shorthand for the backstage.SystemEntityV1alpha1 type (which is a struct)
 type BSSE *backstage.SystemEntityV1alpha1
 
+var SystemNotRecognized = errors.New("System not recognized")
+
 // ReadBS takes a weedmaps service and returns the service owner
 func ReadSystemBS(wms string, c *backstage.Client) (string, BSSE, error) {
 	// first get a list of systems
@@ -26,15 +29,14 @@ func ReadSystemBS(wms string, c *backstage.Client) (string, BSSE, error) {
 
 	// make sure the requested test belongs in the list
 	// if it doesn't belong, the test will appear zeroed out.
-	// TODO: Don't record the non-test in the database.
 	for _, service := range services {
 		if wms == service {
 			// When there is a match with the System List,
 			// grab the System Entity itself and get the Owner.
 			se, _, err := c.Catalog.Systems.Get(context.Background(), wms, "")
 			if err != nil {
-				slog.Error("Failed to fetch System name from Backstage", slog.Any("Error", err))
-				return "ENOENT", nil, err
+				slog.Error("Failed to fetch System", slog.Any("Error", err))
+				return "", nil, err
 			}
 			owner := se.Spec.Owner
 			slog.Info("Owner Found", slog.String("Owner", owner))
@@ -42,7 +44,9 @@ func ReadSystemBS(wms string, c *backstage.Client) (string, BSSE, error) {
 		}
 	}
 
-	return "", nil, err
+	// If we've gotten this far, there wasn't a match.
+	slog.Error("Failed to fetch System", slog.Any("Error", SystemNotRecognized))
+	return "", nil, SystemNotRecognized
 }
 
 // bsSystemList queries Backstage for a list of all System definitions ("kind=system") and returns an array populated with the list.

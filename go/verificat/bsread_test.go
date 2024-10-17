@@ -6,12 +6,10 @@ import (
 
 // Mock data for running Production ReadinessRead
 type mockSvcConfig struct {
-	URL        string
-	Service    string
-	Datetime   int64
-	Owner      string
-	LabelKey   string
-	LabelValue string
+	URL      string
+	Service  string
+	Datetime int64
+	Owner    string
 }
 
 // Mock method that satisfies SvcCat{}

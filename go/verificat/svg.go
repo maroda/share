@@ -6,6 +6,7 @@ import (
 )
 
 // TODO: svgStart needs to be broken up more to programmatically set the viewBox height
+// i.e., the viewBox should expand as the count of elements expands
 const (
 	// Changing the /viewBox/ here can have drastic scale effects
 	// A width of 200 in the viewBox when the width of the SVG is 400
