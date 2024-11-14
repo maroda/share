@@ -1,0 +1,89 @@
+#
+# Secrets
+#
+apiVersion: v1
+kind: Secret
+metadata:
+  name: registry-auth
+  namespace: verificat
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: <BASE64_JSON_CONFIG_WITH_SECRET>
+---
+#
+# Deployment
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: verificat
+  namespace: verificat
+  labels:
+    app: verificat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: verificat
+  template:
+    metadata:
+      labels:
+        app: verificat
+        version: 0.0.1
+    spec:
+      imagePullSecrets:
+      - name: registry-auth
+      containers:
+      - name: verificat
+        image: ghcr.io/ghostgroup/verificat:0.0.1
+        ports:
+          - containerPort: 4330
+        env:
+        - name: BACKSTAGE
+          value: "https://backstage.internal-weedmaps.com"
+        - name: GH_TOKEN
+          value: "<GITHUB_TOKEN>"
+        - name: PORT
+          value: "4330"
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 4330
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 4330
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "125m"
+          limits:
+            memory: "64Mi"
+            cpu: "250m"
+---
+#
+# Service
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: verificat
+  namespace: verificat
+  labels:
+    app: verificat
+    service: verificat
+spec:
+  type: LoadBalancer
+  selector:
+    app: verificat
+  ports:
+  - protocol: TCP
+    name: http
+    port: 80
+    targetPort: 4330

@@ -1,0 +1,17 @@
+#
+# Ingress
+#
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: verificat
+  namespace: verificat
+spec:
+  entryPoints:
+  - web
+  routes:
+  - kind: Rule
+    match: Host(`verificat.k8s.orb.local`) && PathPrefix(`/`)
+    services:
+    - name: verificat
+      port: 80

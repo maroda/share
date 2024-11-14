@@ -21,7 +21,7 @@ const (
 	svgEnd = `</svg>`
 )
 
-// Build the SVG XML for rendering the Almanac data
+// BuildSVG builds the SVG XML for rendering the Almanac data
 func BuildSVG(a *Almanac, sc *SVGCfg) string {
 	var c int // count of Services processed
 

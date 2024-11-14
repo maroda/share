@@ -17,7 +17,7 @@ func (sc *mockSvcConfig) ReadSvc() (string, error) {
 	return "code-owners-admin", nil
 }
 
-func (s *mockSvcConfig) wmOwner() string {
+func (sc *mockSvcConfig) wmOwner() string {
 	return "code-owners-admin"
 }
 

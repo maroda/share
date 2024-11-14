@@ -7,7 +7,7 @@ import (
 	"text/template"
 )
 
-// Store only data required for rendering the webpage
+// AlmanacWeb stores only data required for rendering the webpage
 type AlmanacWeb struct {
 	Title     string  // HTML Doc Title
 	Content   string  // SVG XML

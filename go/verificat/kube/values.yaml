@@ -1,0 +1,40 @@
+---
+## -- Configure to use Localstack DNS only
+dnsConfig:
+  nameservers:
+    - 192.168.97.2
+  searches:
+    - localstack.cloud
+  options:
+    - name: rotate
+    - name: timeout
+      value: "5"
+
+dnsPolicy: "None"
+
+## -- Extra environment variables to add to container.
+extraEnv:
+  - name: AWS_SECRETSMANAGER_ENDPOINT
+    value: "localhost.localstack.cloud:4566"
+  - name: AWS_SSM_ENDPOINT
+    value: "localhost.localstack.cloud:4566"
+  - name: AWS_STS_ENDPOINT
+    value: "localhost.localstack.cloud:4566"
+
+webhook:
+  extraEnv:
+    - name: AWS_SECRETSMANAGER_ENDPOINT
+      value: "localhost.localstack.cloud:4566"
+    - name: AWS_SSM_ENDPOINT
+      value: "localhost.localstack.cloud:4566"
+    - name: AWS_STS_ENDPOINT
+      value: "localhost.localstack.cloud:4566"
+
+certController:
+  extraEnv:
+    - name: AWS_SECRETSMANAGER_ENDPOINT
+      value: "localhost.localstack.cloud:4566"
+    - name: AWS_SSM_ENDPOINT
+      value: "localhost.localstack.cloud:4566"
+    - name: AWS_STS_ENDPOINT
+      value: "localhost.localstack.cloud:4566"

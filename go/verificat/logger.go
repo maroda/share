@@ -6,12 +6,12 @@ import (
 	"os"
 )
 
-// Create a custom Handler with attributes we want included with context
+// ContextHandler creates a custom Handler with attributes we want included with context
 type ContextHandler struct {
 	slog.Handler
 }
 
-// slog.Handler with custom attributes as context values.
+// Handle is an slog.Handler with custom attributes as context values.
 func (h *ContextHandler) Handle(ctx context.Context, r slog.Record) error {
 	if app, ok := ctx.Value("app").(string); ok {
 		r.AddAttrs(slog.String("app", app))
@@ -56,9 +56,4 @@ func createLogger(l slog.Level, a string) bool {
 
 	// Return a boolean of whether slog knows it is set to the passed-in level
 	return slog.Default().Enabled(ctx, l)
-}
-
-// Future Logger function, currently WIP
-func LogInfoMsg(ctx context.Context, msg string) {
-	slog.InfoContext(ctx, msg, slog.String("method", "manual"))
 }

@@ -8,14 +8,14 @@ import (
 	"sort"
 )
 
-// It turns out *json.Encoder is all we need here
+// FSStore uses a *json.Encoder here
 // because we're performing a lot of file ops in the constructor.
 type FSStore struct {
 	database *json.Encoder
 	almanac  Almanac
 }
 
-// Constructor for FSStore
+// NewFSStore Constructor
 func NewFSStore(file *os.File) (*FSStore, error) {
 	// initialize the database file for use with JSON
 	err := initDBFile(file)
@@ -58,7 +58,7 @@ func initDBFile(file *os.File) error {
 	return nil
 }
 
-// GetAlmanac. Provide a sorted list of all services and their LastID.
+// GetAlmanac provides a sorted list of all services and their LastID.
 func (f *FSStore) GetAlmanac() Almanac {
 	sort.Slice(f.almanac, func(i, j int) bool {
 		return f.almanac[i].LastID > f.almanac[j].LastID
@@ -66,7 +66,7 @@ func (f *FSStore) GetAlmanac() Almanac {
 	return f.almanac
 }
 
-// GetTriggerID. Lookup the LastID for a given name.
+// GetTriggerID does a lookup for the LastID for a given name.
 // The var /service/ is a WMService
 func (f *FSStore) GetTriggerID(name string) int {
 	service := f.almanac.Find(name)
@@ -78,7 +78,7 @@ func (f *FSStore) GetTriggerID(name string) int {
 	return 0
 }
 
-// TriggerID. Increase LastID by one, providing a run count.
+// TriggerID increases LastID by one, providing a run count.
 // If it's a new service, create them and start their tally at 1.
 // The var /service/ is a WMService
 func (f *FSStore) TriggerID(name string, score int) {
@@ -101,7 +101,7 @@ func (f *FSStore) TriggerID(name string, score int) {
 	f.database.Encode(f.almanac)
 }
 
-// GetScore. Lookup the Score for a given name.
+// GetScore is a lookup for the Score for a given name.
 // The var /service/ is a WMService
 func (f *FSStore) GetScore(name string) int {
 	service := f.almanac.Find(name)

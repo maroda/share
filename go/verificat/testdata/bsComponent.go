@@ -26,7 +26,7 @@ const (
 // BSCE is shorthand for the backstage.ComponentEntityV1alpha1 type (which is a struct)
 type BSCE *backstage.ComponentEntityV1alpha1
 
-// ReadBS takes a weedmaps service and returns the catalog from Backstage
+// ReadComponentBS takes a weedmaps service and returns the catalog from Backstage
 // Currently only used for Backstage integration testing in component_test.go
 func ReadComponentBS(wms string, c *backstage.Client) (BSCE, error) {
 	component, _, err := c.Catalog.Components.Get(context.Background(), wms, "")

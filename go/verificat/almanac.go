@@ -6,11 +6,10 @@ import (
 	"io"
 )
 
-// Anything that used to return a []WMService
-// can instead return a Almanac
+// Almanac is used in the place of []WMService
 type Almanac []WMService
 
-// Will take an io.Reader like /database/ and decode the result.
+// NewAlmanac will take an io.Reader like /database/ and decode the result.
 func NewAlmanac(rdr io.Reader) ([]WMService, error) {
 	var almanac []WMService
 	err := json.NewDecoder(rdr).Decode(&almanac)
@@ -20,7 +19,7 @@ func NewAlmanac(rdr io.Reader) ([]WMService, error) {
 	return almanac, err
 }
 
-// Takes a Almanac and searches for a service name
+// Find takes an Almanac and searches for a service name
 func (l Almanac) Find(name string) *WMService {
 	for i, p := range l {
 		if p.Name == name {

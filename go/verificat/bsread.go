@@ -7,12 +7,12 @@ import (
 	"github.com/tdabasinskas/go-backstage/v2/backstage"
 )
 
-// SvcCatalog. Methods for operating with the Service Catalog, e.g. Backstage API.
+// SvcCat contains methods for operating with the Service Catalog, e.g. Backstage API.
 type SvcCat interface {
 	ReadSvc() (string, error)
 }
 
-// Client Configuration
+// SvcConfig is the Client Configuration
 type SvcConfig struct {
 	URL      string // URL is the Backstage API endpoint
 	Service  string // Each Service is known as the "Component" in Backstage
@@ -20,7 +20,7 @@ type SvcConfig struct {
 	Owner    string // Should equal CODEOWNERS for this repo in GitHub
 }
 
-// ReadSvc. Query Backstage for a chunk of data about a System,
+// ReadSvc can query Backstage for a chunk of data about a System,
 // i.e. the "top-level" Weedmaps Service.
 // Each method called for filling in data adds the entry to the SvcConfig struct.
 func (sc *SvcConfig) ReadSvc() (string, error) {
@@ -34,7 +34,7 @@ func (sc *SvcConfig) ReadSvc() (string, error) {
 	return sc.Owner, err
 }
 
-// Test this service for Production Readiness
+// ReadinessRead is the function that tests this service for Production Readiness
 func ReadinessRead(i SvcCat) (string, error) {
 	// Calling ReadSvc() initiates the source data struct, SvcConfig
 	// Currently only returning the Owner, which is what ReadSvc() returns

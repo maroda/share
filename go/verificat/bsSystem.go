@@ -8,21 +8,21 @@ import (
 	"github.com/tdabasinskas/go-backstage/v2/backstage"
 )
 
-// BSComponent is a local struct for carrying the contents of .Catalog.Systems.Get
+// BSSystem is a local struct for carrying the contents of .Catalog.Systems.Get
 type BSSystem struct {
 	Owner  string `json:"owner" yaml:"owner"`                       // Owner is an entity reference to the owner of the system.
 	Domain string `json:"domain,omitempty" yaml:"domain,omitempty"` // Domain is an entity reference to the domain that the system belongs to.
 }
 
-// BSCE is shorthand for the backstage.SystemEntityV1alpha1 type (which is a struct)
+// BSSE is shorthand for the backstage.SystemEntityV1alpha1 type (which is a struct)
 type BSSE *backstage.SystemEntityV1alpha1
 
-var SystemNotRecognized = errors.New("System not recognized")
+var SystemNotRecognized = errors.New("system not recognized")
 
-// ReadBS takes a weedmaps service and returns the service owner
+// ReadSystemBS takes a weedmaps service and returns the service owner
 func ReadSystemBS(wms string, c *backstage.Client) (string, BSSE, error) {
 	// first get a list of systems
-	services, err := bsSystemList(wms, c)
+	services, err := bsSystemList(c)
 	if err != nil {
 		return "", nil, err
 	}
@@ -53,7 +53,7 @@ func ReadSystemBS(wms string, c *backstage.Client) (string, BSSE, error) {
 // TODO: Make this a map, key = backstage system / value = github repo link
 // This way, we can check the real repo for CODEOWNERS instead of defaulting to the 'service name' (which works for some, but not all)
 // This is: .Metadata.Annotations.github.com/project-slug (e.g.: for `core` this is `GhostGroup/weedmaps`)
-func bsSystemList(wms string, c *backstage.Client) ([]string, error) {
+func bsSystemList(c *backstage.Client) ([]string, error) {
 	var s []string
 
 	if systems, _, err := c.Catalog.Entities.List(context.Background(), &backstage.ListEntityOptions{Filters: []string{"kind=system"}}); err != nil {

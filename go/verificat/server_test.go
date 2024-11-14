@@ -36,13 +36,6 @@ func (s *StubServiceStore) GetAlmanac() Almanac {
 func TestAlmanac(t *testing.T) {
 
 	t.Run("it returns the almanac table as JSON", func(t *testing.T) {
-		/*
-			wantedAlmanac := []WMService{
-				{"core", 50},
-				{"admin", 60},
-				{"moonshot", 70},
-			}
-		*/
 		// Can the Almanac return three values?
 		// name, lastid, score
 		wantedAlmanac := []WMService{
@@ -66,6 +59,7 @@ func TestAlmanac(t *testing.T) {
 	})
 }
 
+// GET endpoint
 func TestGETServices(t *testing.T) {
 	// Make a new stub "store" to use in testing
 	store := StubServiceStore{
@@ -113,6 +107,26 @@ func TestGETServices(t *testing.T) {
 
 }
 
+// healthz endpoint
+func TestHealthZ(t *testing.T) {
+	store := StubServiceStore{
+		map[string]int{},
+		nil, nil,
+	}
+	server := NewVerificationServ(&store)
+
+	t.Run("returns an 'ok' response /healthz", func(t *testing.T) {
+		request := newHealthzReq()
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusOK)
+		assertResponseBody(t, response.Body.String(), "ok")
+	})
+}
+
+// POST endpoint
 func TestStoreIDs(t *testing.T) {
 	store := StubServiceStore{
 		map[string]int{},
@@ -134,7 +148,7 @@ func TestStoreIDs(t *testing.T) {
 		}
 
 		if store.verifyCalls[0] != service {
-			t.Errorf("did not store correct winner got %q want %q", store.verifyCalls[0], service)
+			t.Errorf("did not store correct service got %q want %q", store.verifyCalls[0], service)
 		}
 	})
 }
@@ -173,6 +187,11 @@ func newGetTriggerIDReq(name string) *http.Request {
 
 func newPostIDReq(name string) *http.Request {
 	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/v0/%s", name), nil)
+	return req
+}
+
+func newHealthzReq() *http.Request {
+	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/healthz"), nil)
 	return req
 }
 

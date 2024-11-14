@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
@@ -22,7 +20,7 @@ type SvcTest interface {
 	TestItem(svc string) *TestReturn
 }
 
-// This is the results database.
+// SvcTestDB is the results database.
 // It needs to work in conjunction with the query entry in SvcConfig.
 // This is passed through ReadinessDisplay to operate TestReturn.
 // Its values are then available in runVerification,
@@ -61,7 +59,7 @@ func urlCat(u ...string) string {
 	return completeURL
 }
 
-// This is returning a test result to ReadinessDisplay
+// TestItem is returning a test result to ReadinessDisplay
 // Currently this represents the "Owner" test between Backstage and GitHub
 func (s *SvcTestDB) TestItem(svc string) *TestReturn {
 	// Check the owner field.
@@ -109,7 +107,7 @@ func (s *SvcTestDB) TestItem(svc string) *TestReturn {
 	return &TestReturn{Present: present, Owner: s.Owner, Reality: reality, Works: works, Score: s.Score}
 }
 
-// ReadinessDisplay. Take the data and run queries for processing and presentation.
+// ReadinessDisplay takes the data and runs queries for processing and presentation.
 // The first arg /i/ is the catalog with its data.
 // The second is which service is being tested.
 // The third is where this output goes.
@@ -126,14 +124,14 @@ func ReadinessDisplay(i SvcTest, service string, w io.Writer) error {
 	return err
 }
 
-// Fetch. Initiate data retrieval from test sources.
+// Fetch will initiate data retrieval from test sources.
 // `url` is an endpoint, typically an API request.
 func Fetch(url string) (string, error) {
 	// this should take the data interface?
 	return ConfiguredFetch(url, 10*time.Second)
 }
 
-// ConfiguredFetch. Conduct parallel fetches for verification data.
+// ConfiguredFetch conducts parallel fetches for verification data.
 func ConfiguredFetch(url string, timeout time.Duration) (string, error) {
 	// In the future, this can take more URLs,
 	// so we can conduct the gets from here in parallel.
@@ -153,15 +151,16 @@ type wwwFetch struct {
 // Extract data from GitHub
 // (i.e. data with the need to set headers, which should be generalized)
 func extractGitHub(url string) chan wwwFetch {
-	// Get GH_TOKEN from the environment
-	// Making this available as a system-wide map might be more efficient
-	// ...but it is also less secure, more of the code can see those values.
-	// So for now, we check for just the one we need: GH_TOKEN
-	fsys := os.DirFS(".")
-	token, err := NewConfigFromFS("GH_TOKEN", fsys)
-	if err != nil {
-		log.Fatal("Token could not be loaded: ", err)
+	// Grab GH_TOKEN from the environment
+	envVar := "GH_TOKEN"
+	token := fillEnvVar(envVar)
+
+	// if there's no EnvVar, log an error and go no further
+	if token == "ENOENT" {
+		slog.Error("Environment Variable not set", slog.String("Key", envVar), slog.String("Value", token))
+		return nil
 	}
+
 	authHeader := "Bearer " + token + ""
 
 	// make a channel for fetching
@@ -172,7 +171,7 @@ func extractGitHub(url string) chan wwwFetch {
 		// This will be passed to a new HTTP client below.
 		req, err := http.NewRequest(http.MethodGet, url, nil)
 		if err != nil {
-			fmt.Errorf("Could not create request")
+			slog.Error("Could not create http client request", slog.String("URL", url), slog.Any("Error", err))
 		}
 
 		// Add Auth headers to the object.
@@ -185,7 +184,7 @@ func extractGitHub(url string) chan wwwFetch {
 		// Perform the actual Get.
 		r, err := client.Do(req)
 		if err != nil {
-			fmt.Errorf("Could not reach service at %q\n", url)
+			slog.Error("Could not reach service", slog.String("URL", url), slog.Any("Error", err))
 		}
 		defer r.Body.Close()
 
@@ -193,13 +192,13 @@ func extractGitHub(url string) chan wwwFetch {
 		if r.StatusCode == http.StatusOK {
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
-				fmt.Errorf("Could not read value at %q\n", url)
+				slog.Error("Could not read value at", slog.String("URL", url), slog.Any("Error", err))
 			}
 			bodyString := string(body)
 			rval := &wwwFetch{Answer: bodyString}
 			www <- *rval
 		} else {
-			fmt.Errorf("Error! Non-200 Status: %q\n", r.StatusCode)
+			slog.Error("Non-200 Status", slog.String("URL", url), slog.Any("Status", r.StatusCode))
 		}
 		close(www)
 	}()

@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	dbFileName = "almanac.db.json"
-	runPort    = "4330"
 	app        = "verificat"
-	llvl       = slog.LevelDebug
+	dbFileName = "almanac.db.json"
+	runPort    = "4330"          // TODO: this should be configurable
+	llvl       = slog.LevelDebug // TODO: this should be configurable
 )
 
 // Main connects a local JSON database to a running API service.

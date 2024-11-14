@@ -1,21 +1,9 @@
 package main
 
 import (
-	"context"
 	"log/slog"
 	"testing"
 )
-
-// WIP Logger function
-func TestLogInfoMsg(t *testing.T) {
-	ctx := context.Background()
-
-	t.Run("produces a log", func(t *testing.T) {
-		logMessage := "Craque Log Message"
-
-		LogInfoMsg(ctx, logMessage)
-	})
-}
 
 // completes with a validation that the level passed is Enabled()
 func TestCreateLogger(t *testing.T) {

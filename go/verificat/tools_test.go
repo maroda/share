@@ -2,49 +2,37 @@ package main
 
 import (
 	"io"
-	"log"
+	"os"
 	"testing"
-	"testing/fstest"
 )
 
-// Will a value be returned for an envar key
-func TestGetEnvVar(t *testing.T) {
-	filename := ".env"
-	testenvvar := "TOKEN=my_1029384756"
-	// We need a fake environment file first
-	// fstest.MapFS provides fs.FS
-	fs := fstest.MapFS{
-		filename: {
-			Data: []byte(testenvvar),
-		},
-	}
+// Use a regular Environment Variable to fill the value requested
+func TestFillEnvVar(t *testing.T) {
 
-	key := "TOKEN"
+	t.Run("returns a default value", func(t *testing.T) {
+		// This 'want' value is a default
+		ev := "ANYTHING"
+		want := "ENOENT"
+		got := fillEnvVar(ev)
 
-	// Make sure the file ".env" was created in this
-	data, err := fs.ReadFile(".env")
-	if err != nil {
-		t.Fatal(err)
-	} else {
-		log.Println("TestGetEnvVar string data match is", string(data) == "TOKEN=my_1029384756")
-	}
+		assertString(t, got, want)
+	})
 
-	// Another way to test that the file exists in this test
-	if err := fstest.TestFS(fs, ".env"); err != nil {
-		t.Fatal(err)
-	}
+	t.Run("returns a set value", func(t *testing.T) {
+		// This 'want' value is a default
+		ev := "TOKEN"
+		want := "ghp_0987654321"
 
-	/*
-		Investigating a potential bug in godotenv
-		Trying to use a fstest.TestFS
-		And godotenv isn't changing its filesystem to look for the file.
-	*/
-	// want := "my_1029384756"
-	want := ""
-	got, err := NewConfigFromFS(key, fs)
+		// Set an environment variable to check
+		err := os.Setenv("TOKEN", "ghp_0987654321")
+		if err != nil {
+			t.Errorf("could not set environment variable")
+		}
 
-	assertString(t, got, want)
-	assertError(t, err, nil)
+		got := fillEnvVar(ev)
+
+		assertString(t, got, want)
+	})
 }
 
 // Test that we can set a file to 0 for writing

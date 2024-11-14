@@ -1,6 +1,6 @@
 # Verificat
 
-[![Codefresh build status]( https://g.codefresh.io/api/badges/pipeline/weedmaps/Verificat%2Fdeploy-build?type=cf-1&key=eyJhbGciOiJIUzI1NiJ9.NWY3NzgwZjczODNhMGEyMTJiZDVlNzMy.Id38geQ5uFQ8Tvx3aEW2Tx0Ud9LTTS8aVCMo5woqEgA)]( https://g.codefresh.io/pipelines/edit/new/builds?id=66e8adfc3d65134079c4c938&pipeline=deploy-build&projects=Verificat&projectId=66e4c9f983d1b3fdebbeba27)
+[![Codefresh build status](https://g.codefresh.io/api/badges/pipeline/weedmaps/Verificat%2Fdeploy-build?type=cf-1&key=eyJhbGciOiJIUzI1NiJ9.NWY3NzgwZjczODNhMGEyMTJiZDVlNzMy.Id38geQ5uFQ8Tvx3aEW2Tx0Ud9LTTS8aVCMo5woqEgA)](https://g.codefresh.io/pipelines/edit/new/builds?id=66e8adfc3d65134079c4c938&pipeline=deploy-build&projects=Verificat&projectId=66e4c9f983d1b3fdebbeba27)
 
 ## About
 
@@ -116,14 +116,16 @@ Metrics won't be as important as Logs with Traces.
 1. Run locally with: `docker run -ti --rm --name verificat -p 4330:4330 ghcr.io/ghostgroup/verificat:develop`
 2. In another terminal, run a test against the `admin` service: `curl -X POST http://localhost:4330/v0/admin`
 3. Get results for all services: `curl http://localhost:4330/v0/almanac`
+4. View the UI: [http://localhost:4330](http://localhost:4330)
 
 ### Full Service Report
 
 There are two ways to see a full report.
 
-1. Browse to the homepage, locally that will look like: <http://localhost:4330>
-1. There is list of Weedmaps services to test in `testdata/servicelist.txt`.
-To use this and populate the database with new runs for everything, run a while command with the file like so (example in `zsh`):
+1. Browse to the homepage, locally that will look like: [http://localhost:4330](http://localhost:4330)
+2. There is list of Weedmaps services to test in `testdata/servicelist.txt`.
+   To use this and populate the database with new runs for everything, run a while command with the file like so (example in `zsh`):
+
 ```
 while read z; do curl -X POST http://localhost:4330/v0/${z}; done < =(cat servicelist.txt)
 ```
@@ -141,6 +143,46 @@ To add an entry to the database:
 1. Issue the same command you would to run a test.
 2. This does _not_ run a test, but creates a new row in the database with the new service and initializes the score to `100`.
 3. Run the same command again to get a real test result.
+
+## Testing
+
+### Go Test Requirements
+
+1. These incorporate integration tests that require VPN access.
+2. The following environment variables are required:
+
+   - `GH_TOKEN` is a Personal Access Token (PAT) that has at least `repo, package:read` scope (e.g.: a **DieselDevEx** token should work)
+   - `BACKSTAGE` is the Backstage API endpoint to use, for production that is: `"https://backstage.internal-weedmaps.com"`
+3. It is recommended to keep these variables in an `.env` file local to this repo (or copyable if you need to reclone). The smoketest script uses this file, but `verificat` only reads ENV VARs.
+
+   - Export them for `verificat` to use: `set -a; source .env`
+4. Finally you're all set to run: `go test`
+
+### Runtime Smoke Test
+
+After `verificat` has been started, run: `./testdata/smoketest.sh`
+
+The response should look something like this:
+
+```
+::: Running smoketest for Verificat at http://localhost:4330 :::
+
+Source .env for EnvVars... loaded:
+ GH_TOKEN=<REDACTED>
+ BACKSTAGE=https://backstage.internal-weedmaps.com
+ PORT=4330
+
+Healthz endpoint... ok
+Almanac download...     2521 bytes
+Admin service check... {
+  "Present": true,
+  "Owner": "code-owners-admin",
+  "Reality": "js-developers",
+  "Works": false,
+  "Score": 99
+}
+Homepage copyright... © 2024 MPL-2.0 <i><b>SRE & Team Diesel</b></i>
+```
 
 ## References
 

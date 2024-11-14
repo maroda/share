@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -16,7 +15,7 @@ const (
 	targetDocTmpl   = "almanac.gohtml"
 )
 
-// This defines the service and its final checklist score
+// WMService defines the service and its final checklist score
 // The final score is taken from 100.
 // If the checklist comes back as true,
 // then the score is 0, and this value remains 100.
@@ -34,13 +33,13 @@ type ServiceStore interface {
 	GetAlmanac() Almanac              // A collection of all services and their scores
 }
 
-// The struct needs to reference the interface to use it
+// VerificationServ needs to reference the interface to use it
 type VerificationServ struct {
 	store ServiceStore
 	http.Handler
 }
 
-// Control the launch of an HTTP service using routed endpoints.
+// NewVerificationServ controls the launch of an HTTP service using routed endpoints.
 func NewVerificationServ(store ServiceStore) *VerificationServ {
 	v := new(VerificationServ)
 	v.store = store
@@ -50,6 +49,8 @@ func NewVerificationServ(store ServiceStore) *VerificationServ {
 	router := http.NewServeMux()
 
 	// Set up each server endpoint and its associated handler function
+	router.Handle("/almanac", http.HandlerFunc(v.almanacHandler))
+	router.Handle("/healthz", http.HandlerFunc(v.healthzHandler))
 	router.Handle("/v0/almanac", http.HandlerFunc(v.almanacHandler))
 	router.Handle("/v0/", http.HandlerFunc(v.servicesHandler))
 	router.Handle("/", http.HandlerFunc(v.homeHandler))
@@ -59,6 +60,18 @@ func NewVerificationServ(store ServiceStore) *VerificationServ {
 	return v
 }
 
+// Healthz handler (/healthz)
+// Very simple endpoint for use with readiness and liveness probes
+// If the app isn't answering 'ok' at this endpoint, all probes fail.
+// TODO: Include a 'liveness' probe that successfully connects to the database
+func (p *VerificationServ) healthzHandler(w http.ResponseWriter, r *http.Request) {
+	// No /w.WriteHeader(http.StatusAccepted)/ here
+	// 200 is the default for w.Write
+	w.Header().Set("content-type", htmlContentType)
+	w.Write([]byte(`ok`))
+}
+
+// UI homepage handler
 // Render the current full Almanac to the home page
 func (p *VerificationServ) homeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", htmlContentType)
@@ -87,6 +100,7 @@ func (p *VerificationServ) homeHandler(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
+// Fetch full almanac handler
 // Return the full JSON almanac of WMServices and their verification scores.
 func (p *VerificationServ) almanacHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", jsonContentType)
@@ -99,7 +113,8 @@ func (p *VerificationServ) almanacHandler(w http.ResponseWriter, r *http.Request
 	)
 }
 
-// Handler for /v0/
+// API for service tests handler
+// Version 0 (/v0/<SERVICE>)
 func (p *VerificationServ) servicesHandler(w http.ResponseWriter, r *http.Request) {
 	// extract this once here, then it's not necessary to pass http.Request
 	service := strings.TrimPrefix(r.URL.Path, "/v0/")
@@ -139,11 +154,14 @@ func (p *VerificationServ) showLastID(w http.ResponseWriter, service string) {
 func (p *VerificationServ) runVerification(w http.ResponseWriter, service string) {
 	w.WriteHeader(http.StatusAccepted)
 
-	// grab the BACKSTAGE url from the config
-	fsys := os.DirFS(".")
-	url, err := NewConfigFromFS("BACKSTAGE", fsys)
-	if err != nil {
-		slog.Error("Token could not be loaded", slog.Any("Error", err))
+	var err error
+	envVar := "BACKSTAGE"
+	url := fillEnvVar(envVar)
+
+	// if there's no EnvVar, log an error and go no further
+	if url == "ENOENT" {
+		slog.Error("Environment Variable not set", slog.String("Key", envVar), slog.String("Value", url))
+		return
 	}
 
 	// Create a data object for the configuration.
