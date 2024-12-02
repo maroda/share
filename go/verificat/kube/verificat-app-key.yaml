@@ -42,7 +42,7 @@ spec:
         - name: BACKSTAGE
           value: "https://backstage.internal-weedmaps.com"
         - name: GH_TOKEN
-          value: "ghp_fake0000"
+          value: "ghp_REDACTED"
         - name: PORT
           value: "4330"
         livenessProbe:

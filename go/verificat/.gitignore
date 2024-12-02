@@ -16,6 +16,7 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+*-key
 
 # Go workspace file
 go.work
@@ -27,8 +28,11 @@ go.work.sum
 # ctags file
 tags
 
-# database files
-*.db.json
+# json data objects
+*.json
+
+# secret yaml
+*-key.yaml
 
 # snyk
 .dccache

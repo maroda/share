@@ -22,7 +22,6 @@ type mockSvcTestDB struct {
 // These 'false' values are what comes through the mock call
 // func (db *mockSvcTestDB) TestItem(svc string) (bool, string, string, bool) {
 func (db *mockSvcTestDB) TestItem(svc string) *TestReturn {
-	//return true, "mock-admin-group", "mock-developer-group", false
 	return &TestReturn{
 		Present: true,
 		Owner:   "mock-admin-group",
@@ -52,24 +51,52 @@ func TestReadinessDisplay(t *testing.T) {
 	})
 }
 
-// TestFetch
-func TestFetch(t *testing.T) {
-	mockWebServer := makeMockWebServ(0 * time.Millisecond)
-	defer mockWebServer.Close()
+// This is an integration test to check that a GitHub URL is reachable.
+// getGitHub checks for the token in the GH_TOKEN EnvVar
+func TestGetGitHub(t *testing.T) {
+	t.Run("Integration: GitHub auth is working", func(t *testing.T) {
+		svc := "admin"
+		var got string
+		want := "* @GhostGroup/js-developers\n"
+		url := ghDomain + ghPreURI + svc + ghGetPATH
+		got, err := getGitHub(url)
 
-	var client http.Client
-	r, err := client.Get(mockWebServer.URL)
-	if err != nil {
-		t.Errorf("Could not reach service at %q\n", mockWebServer.URL)
+		assertError(t, err, nil)
+		assertString(t, got, want)
+	})
+}
+
+func TestMultiFetch(t *testing.T) {
+	t.Run("Returns an answer from multiple endpoints", func(t *testing.T) {
+		// We need a set of test server URLs
+		mockWWW := make(map[int]*httptest.Server)
+		urlsWWW := make(map[int]string)
+
+		// Fill mockWWW with httptest.Servers
+		// Fill urlsWWW with those endpoints
+		for i := 0; i <= 2; i++ {
+			mockWWW[i] = makeMockWebServ(0 * time.Millisecond)
+			urlsWWW[i] = mockWWW[i].URL
+		}
+
+		// Now we can send the list to MultiFetch
+		want := []string{"ownership", "ownership", "ownership"}
+		got, err := MultiFetch(urlsWWW)
+		assertMultiString(t, got, want)
+		assertError(t, err, nil)
+
+		// Clean up resources
+		for i := 0; i <= 2; i++ {
+			mockWWW[i].Close()
+		}
+	})
+}
+
+func assertMultiString(t *testing.T, got, want []string) {
+	t.Helper()
+	if diff := cmp.Diff(got, want); diff != "" {
+		t.Error(diff)
 	}
-	defer r.Body.Close()
-
-	fetchURL := mockWebServer.URL
-	want := "ownership"
-	got, err := Fetch(fetchURL)
-
-	assertString(t, got, want)
-	assertError(t, err, nil)
 }
 
 // Build a URL takes an arbitrary set of pieces and combines them into a browsable URL.
@@ -99,7 +126,7 @@ func TestUrlCat(t *testing.T) {
 	})
 }
 
-// This will be a mock responder for external API calls
+// Mock responder for external API calls
 func makeMockWebServ(delay time.Duration) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		testAnswer := []byte("ownership")
@@ -110,8 +137,5 @@ func makeMockWebServ(delay time.Duration) *httptest.Server {
 		if err != nil {
 			log.Fatalf("ERROR: Could not write to output.")
 		}
-		/* something like:
-		w.WriteBody("ownership")
-		*/
 	}))
 }

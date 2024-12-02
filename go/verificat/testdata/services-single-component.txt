@@ -1,0 +1,15 @@
+moonshot
+orders-service
+convergence
+integrators-service
+logistics-service
+admin
+chat-service
+embedded-ecommerce
+push-notification-service
+notifications
+backstage
+tegola-service
+ad-renderer
+datadog-cost
+hasura

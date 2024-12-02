@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"testing"
 )
 
@@ -37,7 +38,7 @@ func TestReadinessRead(t *testing.T) {
 
 func assertError(t testing.TB, got, want error) {
 	t.Helper()
-	if got != want {
+	if !errors.Is(got, want) {
 		t.Errorf("got error %q want %q", got, want)
 	}
 }

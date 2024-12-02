@@ -9,10 +9,9 @@ import (
 func TestCreateLogger(t *testing.T) {
 	level := slog.LevelDebug
 	app := "verificat"
-	want := true
 	got := createLogger(level, app)
 
-	assertBool(t, got, want)
+	assertBool(t, got, true)
 }
 
 func assertBool(t testing.TB, got, want bool) {

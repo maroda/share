@@ -8,12 +8,6 @@ import (
 	"github.com/tdabasinskas/go-backstage/v2/backstage"
 )
 
-// BSSystem is a local struct for carrying the contents of .Catalog.Systems.Get
-type BSSystem struct {
-	Owner  string `json:"owner" yaml:"owner"`                       // Owner is an entity reference to the owner of the system.
-	Domain string `json:"domain,omitempty" yaml:"domain,omitempty"` // Domain is an entity reference to the domain that the system belongs to.
-}
-
 // BSSE is shorthand for the backstage.SystemEntityV1alpha1 type (which is a struct)
 type BSSE *backstage.SystemEntityV1alpha1
 

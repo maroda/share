@@ -2,18 +2,21 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"strings"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 const (
-	webTimeout time.Duration = 10 * time.Second
-	prefixGH                 = "* @GhostGroup/"
-	suffixGH                 = "\n"
+	webTimeout = 10 * time.Second
+	prefixGH   = "* @GhostGroup/"
+	suffixGH   = "\n"
 )
 
 type SvcTest interface {
@@ -41,6 +44,8 @@ type TestReturn struct {
 	Score   int
 }
 
+// Currently CODEOWNERS is the only thing we check in GitHub
+// so this path is very specific. TODO: /ghGetPATH/ can be dynamic
 const (
 	ghDomain  = "https://api.github.com"
 	ghPreURI  = "/repos/GhostGroup/"
@@ -68,14 +73,19 @@ func (s *SvcTestDB) TestItem(svc string) *TestReturn {
 
 	var present, works bool
 
-	// Get the actual value from CODEOWNERS in the matching GitHub repo
-	fetchreal, err := Fetch(urlCat(ghDomain, ghPreURI, svc, ghGetPATH))
+	// answer, err := Fetch(urlCat(ghDomain, ghPreURI, svc, ghGetPATH))
+
+	// Get the actual value from CODEOWNERS in the matching GitHub repos
+	// This can take a map of URLs, but for now we only have one to give it.
+	target := urlCat(ghDomain, ghPreURI, svc, ghGetPATH)
+	urls := map[int]string{0: target}
+	answer, err := MultiFetch(urls)
 	if err != nil {
 		slog.Error("Cannot Fetch", slog.Any("Error", err))
 	}
 
 	// Strip off the CODEOWNERS formatting
-	reality := strings.TrimPrefix(strings.TrimSuffix(fetchreal, suffixGH), prefixGH)
+	reality := strings.TrimPrefix(strings.TrimSuffix(answer[0], suffixGH), prefixGH)
 
 	// Check the Owner for any WMService in Backstage
 	if s.Owner == "" {
@@ -120,87 +130,89 @@ func ReadinessDisplay(i SvcTest, service string, w io.Writer) error {
 	}
 
 	// Print the JSON bytestring and return
-	fmt.Fprintf(w, string(returnOut))
+	_, err = fmt.Fprintf(w, string(returnOut))
+	if err != nil {
+		slog.Error("Failed to print JSON to Writer", slog.Any("Error", err))
+	}
 	return err
 }
 
-// Fetch will initiate data retrieval from test sources.
-// `url` is an endpoint, typically an API request.
-func Fetch(url string) (string, error) {
-	// this should take the data interface?
-	return ConfiguredFetch(url, 10*time.Second)
-}
+// MultiFetch is ConfiguredFetch for multiple urls in a []string
+// It will return the "Answer" value for each URL in a []string with matching indexes
+func MultiFetch(urls map[int]string) ([]string, error) {
+	// ErrorGroup for catching multiple URL fetches,
+	egrp := new(errgroup.Group)
+	// using a limit of 3 concurrent fetches.
+	// egrp.SetLimit(3)
 
-// ConfiguredFetch conducts parallel fetches for verification data.
-func ConfiguredFetch(url string, timeout time.Duration) (string, error) {
-	// In the future, this can take more URLs,
-	// so we can conduct the gets from here in parallel.
-	select {
-	case a := <-extractGitHub(url):
-		return a.Answer, nil
-	case <-time.After(timeout):
-		return "", fmt.Errorf("timed out waiting for %s", url)
+	// This is the same as wwwFetch.Answer but for multiple URLs
+	results := make([]string, len(urls))
+
+	// Step through the list and fire off a check
+	for i, url := range urls {
+		egrp.Go(func() error {
+			answer, err := getGitHub(url)
+			results[i] = answer
+			return err
+		})
 	}
+
+	if err := egrp.Wait(); err != nil {
+		return results, err
+	}
+
+	return results, nil
 }
 
-// wwwFetch is a struct for values returned to Fetch over HTTP.
-type wwwFetch struct {
-	Answer string
-}
-
-// Extract data from GitHub
-// (i.e. data with the need to set headers, which should be generalized)
-func extractGitHub(url string) chan wwwFetch {
+// getGitHub should take the url and a pointer to the results
+// then update the pointer and return only an error
+func getGitHub(currURL string) (string, error) {
 	// Grab GH_TOKEN from the environment
+	// if there's no EnvVar, log an error and go no further
 	envVar := "GH_TOKEN"
 	token := fillEnvVar(envVar)
-
-	// if there's no EnvVar, log an error and go no further
 	if token == "ENOENT" {
 		slog.Error("Environment Variable not set", slog.String("Key", envVar), slog.String("Value", token))
-		return nil
+		return token, nil
 	}
 
+	// Build the authHeader with the new token
 	authHeader := "Bearer " + token + ""
 
-	// make a channel for fetching
-	www := make(chan wwwFetch)
+	// Create a new HTTP request object
+	// This will be passed to a new HTTP client below.
+	req, err := http.NewRequest(http.MethodGet, currURL, nil)
+	if err != nil {
+		slog.Error("Could not create http client request", slog.String("URL", currURL), slog.Any("Error", err))
+		return "", err
+	}
 
-	go func() {
-		// Create a new HTTP request object
-		// This will be passed to a new HTTP client below.
-		req, err := http.NewRequest(http.MethodGet, url, nil)
-		if err != nil {
-			slog.Error("Could not create http client request", slog.String("URL", url), slog.Any("Error", err))
-		}
+	// Add Auth headers to the object.
+	req.Header.Add("Accept", "application/vnd.github.raw+json")
+	req.Header.Add("Authorization", authHeader)
 
-		// Add Auth headers to the object.
-		req.Header.Add("Accept", "application/vnd.github.raw+json")
-		req.Header.Add("Authorization", authHeader)
+	// Create a new Client pointer with a configured timeout
+	client := &http.Client{Timeout: webTimeout}
 
-		// Create a new Client pointer with a configured timeout
-		client := &http.Client{Timeout: webTimeout}
+	// Perform the actual Get.
+	r, err := client.Do(req)
+	if err != nil {
+		slog.Error("Could not reach service", slog.String("URL", currURL), slog.Any("Error", err))
+		r.Body.Close()
+		return "", err
+	}
+	defer r.Body.Close()
 
-		// Perform the actual Get.
-		r, err := client.Do(req)
-		if err != nil {
-			slog.Error("Could not reach service", slog.String("URL", url), slog.Any("Error", err))
-		}
-		defer r.Body.Close()
+	if r.StatusCode != http.StatusOK {
+		slog.Error("Non-200 Status", slog.String("URL", currURL), slog.Any("Status", r.StatusCode))
+		return "", errors.New("non 200 Status")
+	}
 
-		// HTTP status code has to be 200 to work
-		if r.StatusCode == http.StatusOK {
-			body, err := io.ReadAll(r.Body)
-			if err != nil {
-				slog.Error("Could not read value at", slog.String("URL", url), slog.Any("Error", err))
-			}
-			bodyString := string(body)
-			rval := &wwwFetch{Answer: bodyString}
-			www <- *rval
-		} else {
-			slog.Error("Non-200 Status", slog.String("URL", url), slog.Any("Status", r.StatusCode))
-		}
-		close(www)
-	}()
-	return www
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		slog.Error("Could not read value at", slog.String("URL", currURL), slog.Any("Error", err))
+	}
+
+	bodyString := string(body)
+	return bodyString, err
 }

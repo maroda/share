@@ -32,7 +32,7 @@ if [[ -n $adminalive ]]; then
   print $adminalive | jq
 else
   print $?
-  print "Sorry, no admin data was found.\n"
+  print "Sorry, no admin data was found. Have you set BACKSTAGE and GH_TOKEN?\n"
 fi
 
 print -n "Homepage copyright... "
