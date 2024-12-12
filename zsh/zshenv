@@ -36,6 +36,9 @@ function sttit () { setTermText 2 $@; }
 # launch vscode
 function code () { VSCODE_CWD="$PWD" open -n -b "com.microsoft.VSCode" --args $* ;}
 
+# launch goland
+function land () { open -na "GoLand.app" --args "$@" }
+
 # set my serviceaccount for gcp
 function gcpme () {
     export GOOGLE_PROJECT=craque-420420
@@ -74,3 +77,12 @@ function pfc() {
   done
 }
 
+# get a current zulu timestamp
+function zdt() {
+  TZ=Zulu /bin/date +%Y-%m-%dT%H:%m:%SZ
+}
+
+# work dev dir stack
+function pud() {
+  pushd ~/dev/github/maroda
+}
