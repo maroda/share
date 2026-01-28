@@ -1,0 +1,37 @@
+#                     _|            _|
+# _|  _|_|    _|_|_|      _|_|_|    _|_|_|      _|_|    _|      _|      _|    _|_|_|
+# _|_|      _|    _|  _|  _|    _|  _|    _|  _|    _|  _|      _|      _|  _|    _|
+# _|        _|    _|  _|  _|    _|  _|    _|  _|    _|    _|  _|  _|  _|    _|    _|
+# _|          _|_|_|  _|  _|    _|  _|_|_|      _|_|        _|      _|        _|_|_|
+#                                                                                 _|
+#                                                                                 _|
+
+# Meta
+[meta.last]
+dt = 2025-10-07T22:20:59Z
+editor = 'maroda@rainbowq.io'
+
+[cmd]
+godoc = "godoc -http :8000"
+zdt = "TZ=Zulu /bin/date +%Y-%m-%dT%H:%m:%SZ"
+
+[cmd.docker]
+remove = "docker rm -f $(docker ps -aq) && docker volume rm $(docker volume ls -q)"
+providers = "docker run -ti --rm docker.internal-weedmaps.com/ops/terraform-tools shell find /providers/plugins/registry.terraform.io -regex '.*/[0-9].*json'"
+
+[cmd.kubectl]
+nslookup = "kubectl run -it --rm debug --image=busybox --restart=Never -- nslookup <service>.<namespace>.svc.cluster.local"
+
+[cmd.eks]
+clusters = "aws --profile acceptance eks list-clusters"
+config = "aws eks --profile acceptance update-kubeconfig --name eks-weedmaps-wanted-caiman --alias wm-acceptance"
+
+[cmd.aws]
+vpnfix = "for b in `netstat -r | awk '/bridge/ {print $4 | \"sort -u\"}'`;sudo ifconfig ${b} destroy"
+ecrlogin = "aws ecr get-login-password --profile admin --region us-west-2 | docker login --username AWS --password-stdin 197533337274.dkr.ecr.us-west-2.amazonaws.com"
+eksadd = "aws eks update-kubeconfig --name eks-dts-mutual-quetzal --profile=admin"
+
+[cmd.go]
+coverprofile = "go test -coverprofile=c.out"
+coveroutput = "go tool cover -func=c.out"
+race = "go run -race . 2 > app.err"

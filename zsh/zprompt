@@ -22,7 +22,7 @@ function precmd {
         PR_PWDCOLOR="${PR_BOLD_DEFAULT}"
     else
         PR_PWDCOLOR="${PR_BOLD_YELLOW}"
-    fi  
+    fi
 
     # show when in tmux
 #    if [[ -n "${TMUX}" ]]; then
@@ -51,32 +51,32 @@ zle -N zle-keymap-select
 setprompt () {
     setopt prompt_subst
     autoload colors
-	
+
     if [[ "$terminfo[colors]" -gt 8 ]]; then
         colors
     fi
 
-    for COLOR in CYAN RED GREEN YELLOW BLUE BLACK; do
+    for COLOR in CYAN RED GREEN YELLOW BLUE MAGENTA; do
         eval PR_$COLOR='%{$fg_no_bold[${(L)COLOR}]%}'
         eval PR_BOLD_$COLOR='%{$fg_bold[${(L)COLOR}]%}'
     done
     eval PR_BOLD_DEFAULT='%{$fg_bold[default]%}'
 
     # set the prompt
-    PROMPT='${PR_BOLD_BLUE}<${PR_BLUE}<${PR_BOLD_BLACK}<${PR_BOLD_DEFAULT}${PR_CYAN} \
+    PROMPT='${PR_BOLD_BLUE}<${PR_BLUE}<${PR_BOLD_MAGENTA}<${PR_BOLD_DEFAULT}${PR_CYAN} \
 %D{%R.%S %a %b\/%d\/%y}${PR_BLUE}|${PR_PWDCOLOR}%${PR_PWDLEN}<...<%~%<<\
 
-${PR_BOLD_BLUE}<${PR_BLUE}<${PR_BOLD_BLACK}< \
+${PR_BOLD_BLUE}<${PR_BLUE}<${PR_BOLD_MAGENTA}< \
 %(!.${PR_BLUE}%n${PR_WHITE}.%n)@%m${PR_BLUE}|${PR_BOLD_DEFAULT}%h${PR_BOLD_BLUE}\
 %(?.. exit:%?)${PR_BOLD_BLUE}${PR_TMUX}${PR_JOBS}${PR_VCS}${PR_BATTERY}\
 ${PR_BOLD_BLUE}${VIMODE}\
 
-${PR_BOLD_BLACK}>${PR_GREEN}>${PR_BOLD_GREEN}>\
+${PR_BOLD_MAGENTA}>${PR_GREEN}>${PR_BOLD_GREEN}>\
 %{${reset_color}%} '
 
     # continuation prompt
-    PROMPT2='${PR_BOLD_BLACK}>${PR_GREEN}>${PR_BOLD_GREEN}>\
-${PR_BOLD_DEFAULT} %_ ${PR_BOLD_BLACK}>${PR_GREEN}>\
+    PROMPT2='${PR_BOLD_MAGENTA}>${PR_GREEN}>${PR_BOLD_GREEN}>\
+${PR_BOLD_DEFAULT} %_ ${PR_BOLD_MAGENTA}>${PR_GREEN}>\
 ${PR_BOLD_GREEN}>%{${reset_color}%} '
 }
 

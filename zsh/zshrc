@@ -23,7 +23,7 @@ zstyle :compinstall filename '~/.zshrc'
 autoload -U compinit tetris zargs zcalc zmv zsh-mime-setup
 zmodload zsh/mathfunc
 zle -N tetris
-FPATH=$(/usr/local/bin/brew --prefix)/share/zsh/site-functions:$FPATH
+FPATH=$(/opt/homebrew/bin/brew --prefix)/share/zsh/site-functions:$FPATH
 compinit
 zsh-mime-setup
 umask 022
@@ -41,21 +41,20 @@ else
     #PROMPT='%B%F{240}%m %1~%f%b %# '
 	promptinit
 	prompt adam2
-	prompt elite2
+	#prompt elite2
 fi
 #}}}
 
 #	variables {{{
 
-export GOPATH=$HOME/go
-export PATH=/usr/local/opt/sqlite/bin:/opt/bin:/opt/local/bin:/opt/local/sbin:/usr/local/bin:/usr/local/sbin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/X11R6/bin:/usr/X11R6/sbin:~/bin:$GOPATH/bin
+export GOPATH=$HOME/dev/go
+export PATH=/opt/bin:/opt/local/bin:/opt/local/sbin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/X11R6/bin:/usr/X11R6/sbin:~/bin:$GOPATH/bin
 export LD_LIBRARY_PATH=/usr/lib:/usr/local/lib
 export HOSTNAME=`hostname`
-export EDITOR=/usr/bin/vim
+export EDITOR=/opt/homebrew/bin/vim
 export VISUAL=$EDITOR
 export PAGER=`which less`
 export LESS=eFRX
-#export LESS=-cex4M
 export MANPATH=/usr/share/man:/usr/local/share/man
 export TMPDIR=/var/tmp
 export NOW=`date +%Y%m%d%H%M`
@@ -66,30 +65,38 @@ export ZULU=`TZ=Zulu /bin/date +%Y-%m-%dT%H:%m:%SZ`
 #	aliases {{{
 
 # Qio
+alias vq="vi ~/.config/qio/rainbow.toml"
 # alias qio="docker run -it --rm gcr.io/craque-420420/rainbow:latest qio --config ./rainbow.toml"
 
 # Dev environment bootstrapping
 alias booc="source ~/bin/booc"
 
 # Kubernetes
-alias kl="/usr/local/bin/kubectl"
+alias kl="/opt/homebrew/bin/kubectl"
+alias kx="/opt/homebrew/bin/kubectx"
 
 # AWS
 alias cid="/usr/local/bin/aws sts get-caller-identity"
 
 # Hashicorp
-alias tf="/usr/local/bin/terraform"
+alias tf="/opt/homebrew/bin/terraform"
 alias tfvp="tf fmt && tf validate && tf plan"
 alias tfls="tf fmt && tf validate && tflint && tfsec && tf plan"
 alias terrag='/usr/local/bin/terraform graph | dot -Tsvg > graph.svg && open graph.svg -a /Applications/Net/Google\ Chrome.app'
 
 # git
-alias git="/usr/local/bin/hub"
+alias git="/opt/homebrew/bin/hub"
 alias gits="git status"
 alias gitc="git checkout "
 alias gitfp="git fetch && git pull"
 alias gitm="git checkout main && git fetch && git pull"
-alias gitma="git checkout master && git fetch && git pull"
+alias gitd="git checkout develop && git fetch && git pull"
+
+# tags
+alias ctag="ctags -R --exclude=.github --exclude=.git ."
+
+# alias away macos versions
+alias sed='/opt/homebrew/bin/ssed'
 
 # various
 alias dv='dirs -v'
@@ -116,32 +123,22 @@ alias pu='pushd'
 alias rsynca='rsync -avzP'
 alias rsyncan='rsync -avzPn'
 alias rxvt='rxvt -bg black -fg moccasin -geometry 100x30 &'
-alias idf='icdiff'
-alias sdf='sdiff -s'
+alias idff='icdiff'
+alias sdff='sdiff -s'
+alias gdff='git-icdiff'
 alias ssho='ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
 alias sshk='ssh -A -q -p26662 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
-alias t='/usr/local/bin/tree -aCI .git' # colored output, show dotfiles, ignore .git
-alias t4='/usr/local/bin/tree -L 4 -daCI .git' # level=4, dirs only, colored output, show dotfiles, ignore .git
+alias t='/opt/homebrew/bin/tree -aCI .git' # colored output, show dotfiles, ignore .git
+alias t4='/opt/homebrew/bin/tree -L 4 -daCI .git' # level=4, dirs only, colored output, show dotfiles, ignore .git
 alias ta='tmux att'
 alias mux='tmuxinator'
 alias ttcpc='/usr/bin/ttcp -t -s -v -f m -l16384 -n6400 -p10004 '
 alias ttcps='/usr/bin/ttcp -r -s -v -f m -l16384 -n6400 -p10004'
 alias vi=vim
-alias zdt='TZ=Zulu /bin/date +%Y-%m-%dT%H:%m:%SZ'
 
 # suffix aliases
 alias -s html=vim
 alias -s jinja2=vim
-
-# db
-alias innostat='mysql -e "show engine innodb status\G"'
-alias myrun='mysqladmin processlist | grep -v Sleep'
-alias myenv='mysqladmin ext var'
-alias mysss='echo "show slave status\G" | mysql'
-
-# hosts
-alias mcraque='sshfs -p62202 craque@craque.net: ~/mnt/craque.net'
-alias goc='sttb craque && ssh -p62202 craque@craque.net'
 
 #}}}
 
@@ -179,11 +176,6 @@ bindkey '^R' history-incremental-search-backward
 zstyle ':completion::complete:*' use-cache 1
 zstyle ':completion:*:cd:*' ignored-patterns '(*/)#lost+found'
 
-#myHosts=( craque@craque.net )
-#sshHosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
-#allHosts=( $myHosts )
-#zstyle '*' hosts $allHosts
-
 #}}}
 
 #	terminal {{{
@@ -205,21 +197,19 @@ test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell
 #	miscellaneous {{{
 autoload -U +X bashcompinit && bashcompinit
 
-complete -o nospace -C /usr/local/bin/vault vault
-
 # fuzzy finder
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+source <(fzf --zsh)
 
-# ACME LetsEncrypt
-# . "/Users/matt/.acme.sh/acme.sh.env"
+# Claude Code
+export PATH="$HOME/.local/bin:$PATH"
 
-# Google Cloud SDK.
-[[ -a '/Users/matt/dev/gcp/google-cloud-sdk/path.zsh.inc' ]] && . '/Users/matt/dev/gcp/google-cloud-sdk/path.zsh.inc'
-[[ -a '/Users/matt/dev/gcp/google-cloud-sdk/completion.zsh.inc' ]] && . '/Users/matt/dev/gcp/google-cloud-sdk/completion.zsh.inc'
+# OpenJDK
+export JAVA_HOME="/opt/homebrew/opt/openjdk"
+export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
 
-## Blameless ##
-export GOOGLE_APPLICATION_CREDENTIALS=/Users/matt/sec/sa-key.json
-export PATH=/usr/local/opt/openssl@1.1/bin:$PATH
-export PATH=/usr/local/opt/yq@3/bin:$PATH
-
+# Node Version Manager
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 #}}}

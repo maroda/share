@@ -1,0 +1,68 @@
+title Observability Platform Users
+anchor Manages [0.99, 0.21]
+anchor Notified [0.99, 0.83]
+anchor Analyzes [0.99, 0.44]
+
+component Indexing [0.32, 0.10] label [-75, 0]
+component Tracing [0.68, 0.08] label [-69, -3]
+component Logging [0.59, 0.09] label [-69, 1]
+component Metrics [0.40, 0.17] label [-26, 25]
+component Dashboards [0.91, 0.28] label [19, 13]
+component Deployment [0.46, 0.24] label [-36, 29]
+component Collectors [0.24, 0.45]
+component Sources [0.21, 0.59]
+component Pipeline [0.26, 0.28] label [-25, 24]
+
+Manages->Indexing
+Manages->Tracing
+Manages->Logging
+Manages->Metrics
+Manages->Dashboards
+Manages->Deployment
+Indexing->Pipeline
+Pipeline->Collectors
+Sources->Collectors
+Alert Endpoint->Sources
+Cloud Infra->Alert Endpoint
+Cloud Infra->Email/Auth
+
+note Infra as Code [0.98, 0.12]
+note Observability Vendors [0.62, 0.58]
+note AWS, GCP, etc [0.05, 0.87]
+note Vendor UI [0.98, 0.32]
+
+component Monitor [0.54, 0.31] label [-2, 24]
+component Alert Endpoint [0.17, 0.72] label [17, -6]
+component Notifications [0.93, 0.89]
+component Email/Auth [0.51, 0.92] label [-93, 7]
+
+evolve Deployment->Modern Prometheus 0.43
+evolve Tracing->OpenTelemetry 0.41 label [-63, -16]
+evolve Logging->Structured Logs 0.46 label [-37, -26]
+evolve Dashboards->KPI Views 0.5 label [-34, -15]
+evolve Metrics->RED Metrics 0.34
+evolve Monitor->Team Owned Monitors 0.41
+evolve Indexing->Automated Rules 0.34 label [-22, -18]
+
+Notified->Monitor
+Notified->Alert Endpoint
+Notified->Notifications
+Notifications->Email/Auth
+
+component Cloud Infra [0.12, 0.92] label [-20, 30]
+component Query [0.94, 0.38] label [-37, -15]
+component Aggregate [0.79, 0.46]
+component Transform [0.87, 0.52] label [11, 7]
+component Display [0.91, 0.58]
+component Synthesize [0.83, 0.49] label [15, 5]
+component Continuous Learning [0.97, 0.58] label [23, -13]
+
+Query->Dashboards
+Analyzes->Query
+Query->Aggregate
+Query->Transform
+Analyzes->Display
+Query->Synthesize
+Analyzes->Continuous Learning
+
+style wardley
