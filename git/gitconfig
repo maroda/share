@@ -3,7 +3,7 @@
   name = Matt Davis
   email = maroda@gmail.com
   # Added for 1Password support
-  signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMwCTHL0IALSIGAYrlJXhwINsy/dWm8/lPehO1O9+7GT
+  signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEXZC/yBzFxk9fPHmGN0SiALv8PAWzgCMvsLcuu5oYzS
 [github]
   user = maroda
 
