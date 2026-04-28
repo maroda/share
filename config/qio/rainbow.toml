@@ -11,6 +11,7 @@
 dt = 2025-10-07T22:20:59Z
 editor = 'maroda@rainbowq.io'
 
+# Weedmaps
 [cmd]
 godoc = "godoc -http :8000"
 zdt = "TZ=Zulu /bin/date +%Y-%m-%dT%H:%m:%SZ"
